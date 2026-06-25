@@ -1,17 +1,21 @@
 import pytest
-from neo_detect.abs_mag import abs_mag
+
+from neo_detect.abs_mag import Asteroid
 
 class Test_Abs_Mag:
 
     def test_diam_30m(self):
-        expected_H = 42
+        expected_H = 25
 
-        H = abs_mag(30.0, albedo = 0.14)
-        
-        assert H == expected_H
+        ast = Asteroid(30.0, albedo = 0.20)
+        H = ast.abs_mag()
+
+        assert H == pytest.approx(expected_H, abs=0.05)
+
     def test_diam_140m(self):
         expected_H = 22
 
-        H = abs_mag(140.0, albedo = 0.15)
-        
-        assert H == expected_H
+        ast = Asteroid(140.0, 0.15)
+        H = ast.abs_mag()
+
+        assert H == pytest.approx(expected_H, abs=0.1)
