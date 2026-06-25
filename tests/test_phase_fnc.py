@@ -1,7 +1,6 @@
 import pytest
-import math
 
-from neo_detect.phase_fnc import Phase_Function
+from neo_detect.abs_mag import Phase_Function
 
 class Test_Phase_Function:
     def test_angle_0(self):

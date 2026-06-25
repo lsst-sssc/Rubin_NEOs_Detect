@@ -19,3 +19,4 @@ class Test_Abs_Mag:
         H = ast.abs_mag()
 
         assert H == pytest.approx(expected_H, abs=0.1)
+    
