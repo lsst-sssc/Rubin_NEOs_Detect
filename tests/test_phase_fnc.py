@@ -1,6 +1,6 @@
 import pytest
 
-from neo_detect.abs_mag import Phase_Function
+from neo_detect.phase_fnc import Phase_Function
 
 class Test_Phase_Function:
     def test_angle_0(self):
@@ -26,3 +26,4 @@ class Test_Phase_Function:
         phi = pf.phase_function()
 
         assert phi == pytest.approx(expected_phi, abs=1e-6)
+
