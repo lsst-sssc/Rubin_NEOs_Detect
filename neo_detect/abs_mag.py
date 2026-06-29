@@ -8,4 +8,4 @@ class Asteroid:
     def abs_mag(self):
 
         H = 15.618 - 5 * math.log10(self.diameter / 1000.0) - 2.5 * math.log10(self.albedo)
-        return H
+        return H 

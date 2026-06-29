@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 class Phase_Function:
     def __init__(self, angle: float, G: float = 0.15):
