@@ -2,3 +2,4 @@ ipython
 pytest
 pytest-cov
 sbpy
+numpy
