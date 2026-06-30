@@ -1,6 +1,6 @@
 import pytest
 
-from neo_detect.abs_mag import Asteroid
+from neo_detect.asteroid import Asteroid
 
 class Test_Abs_Mag:
 
