@@ -26,6 +26,16 @@ class Asteroid:
         return H
     
     def phase_function(self, angle: float):
+
+        """
+        Computes the phase function for a given phase angle (in degrees) using the Bowell HG system. 
+        Reference: Bowell et al. (1989), "Application of photometric models to asteroids". 1989aste.conf..524B
+
+        Returns
+        -------
+        float
+            Phase function value, phi
+        """
         phi1 = math.exp(-3.33 * (math.tan(math.radians(angle / 2))) ** 0.63)
         phi2 = math.exp(-1.87 * (math.tan(math.radians(angle / 2))) ** 1.22)
 
@@ -36,6 +46,15 @@ class Asteroid:
     
     def apparent_magnitude(self, r: float, delta: float, phase_angle: float) -> float:
 
+        """
+        Computes the apparent magnitude for a given distance and phase angle using the Bowell HG system.
+        Reference: Bowell et al. (1989), "Application of photometric models to asteroids". 1989aste.conf..524B
+
+        Returns
+        -------
+        float
+            Apparent magnitude, m
+        """
         phi = Asteroid(self.G).phase_function(phase_angle)
 
         m = self.H + 5 * math.log10(r * delta) - 2.5 * math.log10(phi)
