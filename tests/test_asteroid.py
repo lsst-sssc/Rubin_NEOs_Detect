@@ -71,17 +71,17 @@ class Test_Asteroid:
         assert m == pytest.approx(expected_m, abs = 0.1)
     
     def test_cartesian_grid(self): 
-        ast = Asteroid(diameter = 3600, albedo = 0.14, G = 0.15)
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
         
         x_coords = [-1, 0.0, 1.0]
         y_coords = [-1, 0.0, 1.0]
         
         for x in x_coords:
             for y in y_coords:
-                r = math.sqrt(x**2 + y**2)
-                delta = math.sqrt((x - 1)**2 + (y - 1)**2)
-                phase_angle = math(#???)
-                
-                m = ast.apparent_magnitude(r = r, delta = delta, phase_angle = phase_angle)
+                r_2d = math.sqrt(x**2 + y**2)
+                delta_2d = math.sqrt((x - 1)**2 + (y - 1)**2)
+                phase_angle_2d = math.degrees(math.acos((r_2d **2 + delta_2d **2)/ (2 * r_2d * delta_2d)))
+
+                m = ast.apparent_magnitude(r = r_2d, delta = delta_2d, phase_angle = phase_angle_2d)
             
                 assert m > 10 and m < 40
