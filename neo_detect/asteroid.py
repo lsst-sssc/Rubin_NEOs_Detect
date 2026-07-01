@@ -61,4 +61,32 @@ class Asteroid:
 
         return m
   
-    
+    # r = sqrt(x^2 + y^2) 
+    # delta = sqrt((x -x0)^2 + (y - y0)^2)
+    # phase_angle = arccos((x*x0 + y*y0) / (r * delta))
+    # Basis for Cartesian grid 
+    # Calculate for Cartesian grid of x and y coordinates 
+    # x = np.linspace(-10, 10, 100) maybe idk??
+    # y = np.linspace(-10, 10, 100)
+    def cartesian_grid(self, x, y, x0, y0):
+        """
+        Computes the Cartesian grid for a given set of x and y coordinates, and a reference point (x0, y0).
+
+        Parameters
+        ----------
+        x - Array of x coordinates.
+        y - Array of y coordinates.
+        x0 - Float of reference x coordinate.
+        y0 - Float of reference y coordinate.
+
+        Returns
+        -------
+        r - Array of distances from the origin to each point in the grid.
+        delta - Array of distances from the reference point (x0, y0) to each point in the grid.
+        phase_angle - Array of phase angles for each point in the grid.
+        """
+        r_2d = math.sqrt(x**2 + y**2)
+        delta_2d = math.sqrt((x - x0)**2 + (y - y0)**2)
+        phase_angle_2d = math.acos((x * x0 + y * y0) / (r_2d * delta_2d))
+
+        return r_2d, delta_2d, phase_angle_2d
