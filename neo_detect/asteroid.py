@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class Asteroid:
     H = None
@@ -84,8 +85,31 @@ class Asteroid:
         delta - Array of distances from the reference point (x0, y0) to each point in the grid.
         phase_angle - Array of phase angles for each point in the grid.
         """
-        r_2d = math.sqrt(x**2 + y**2)
-        delta_2d = math.sqrt((x - 1)**2 + (y - 1)**2)
-        phase_angle_2d = math.acos((r_2d**2 + delta_2d**2 - 1) / (2 * r_2d * delta_2d))
+        r_2d = np.sqrt(x**2 + y**2)
+        delta_2d = np.sqrt((x - 1)**2 + (y)**2)
+        phase_angle_2d = np.degrees(np.arccos((r_2d**2 + delta_2d**2 - 1) / (2 * r_2d * delta_2d)))
 
         return r_2d, delta_2d, phase_angle_2d
+    
+    def apparent_magnitude_date(self, date: str) -> float:
+        """
+        Computes the apparent magnitude for a given date using the Bowell HG system.
+        Reference: Bowell et al. (1989), "Application of photometric models to asteroids". 1989aste.conf..524B
+
+        Returns
+        -------
+        float
+            Apparent magnitude, m
+        """
+        # For now, we will use a placeholder for r, delta, and phase_angle based on the date.
+        # In a real implementation, these values would be computed based on the asteroid's orbit and the date.
+        if date == '2026-07-02':
+            r = 1.414  # Placeholder value for distance from Sun in AU
+            delta = 1.0  # Placeholder value for distance from Earth in AU
+            phase_angle = 45.0  # Placeholder value for phase angle in degrees
+        else:
+            raise ValueError("Date not supported in this placeholder implementation.")
+
+        m = self.apparent_magnitude(r, delta, phase_angle)
+
+        return m

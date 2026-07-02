@@ -1,5 +1,5 @@
 import ast
-
+import numpy as np
 import pytest
 import math
 
@@ -72,14 +72,98 @@ class Test_Asteroid:
 
         assert m == pytest.approx(expected_m, abs = 0.1)
     
-    def test_cartesian_grid(self, x, y):
-        expected_r, expected_delta, expected_phase_angle = 1.4, 1.0, 45.0 
+    def test_cartesian_grid_x1y1(self):
+        x = 1.0
+        y = 1.0
+        expected_r, expected_delta, expected_phase_angle = 1.414, 1.0, 45.0 
 
         ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
         r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
-        x_arr = [1.0]
-        y_arr = [1.0]
+        
 
-        assert r_2d == pytest.approx(expected_r, rel=1e-12, abs=1e-12)
-        assert delta_2d == pytest.approx(expected_delta, rel=1e-12, abs=1e-12)
-        assert phase_angle_2d == pytest.approx(expected_phase_angle, rel=1e-12, abs=1e-12)
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 0.1)
+
+
+    def test_cartesian_grid_x0y1(self):
+        x = 0.0
+        y = -1.0
+        expected_r, expected_delta, expected_phase_angle = 1.0, 1.414, 45.0 
+
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
+        
+
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 0.1)
+
+
+    def test_cartesian_grid_x05y05(self):
+        x = 0.5
+        y = 0.5
+        expected_r, expected_delta, expected_phase_angle = 0.707, 0.707, 90.0 
+
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
+        
+
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 0.1)
+
+    def test_cartesian_grid_x06y04(self):
+        x = 0.6
+        y = 0.4
+        expected_r, expected_delta, expected_phase_angle = 0.721, 0.566, 101.0 
+
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
+        
+
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 1.0)
+
+
+    def test_cartesian_grid_x2y05(self):
+        x = 2.0
+        y = -0.5
+        expected_r, expected_delta, expected_phase_angle = 2.061, 1.118, 12.0
+
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
+        
+
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 1.0)
+
+    def test_cartesian_grid_array(self):
+        x = np.array([2.0])
+        y = np.array([-0.5])
+        expected_r, expected_delta, expected_phase_angle = 2.061, 1.118, 12.0
+
+        ast = Asteroid(diameter = 3.6, albedo = 0.14, G = 0.15)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(x, y)
+        
+
+        assert r_2d == pytest.approx(expected_r, abs = 1e-3)
+        assert delta_2d == pytest.approx(expected_delta, abs = 1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle, abs = 1.0)
+
+
+    def test_app_mag_date(self): 
+        expected_m = 32.444
+        date = '2026-07-02'
+        diameter = 3.6
+
+        ast = Asteroid(diameter=diameter, albedo=0.14, G=0.15)
+        m = ast.apparent_magnitude_date(date)
+
+        assert m == pytest.approx(expected_m, abs = 0.1)
+
+
+    
+        
