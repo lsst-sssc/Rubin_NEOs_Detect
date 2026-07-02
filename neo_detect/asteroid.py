@@ -68,7 +68,7 @@ class Asteroid:
     # Calculate for Cartesian grid of x and y coordinates 
     # x = np.linspace(-10, 10, 100) maybe idk??
     # y = np.linspace(-10, 10, 100)
-    def cartesian_grid(self, x, y, x0, y0):
+    def cartesian_grid(self, x, y):
         """
         Computes the Cartesian grid for a given set of x and y coordinates, and a reference point (x0, y0).
 
@@ -76,8 +76,7 @@ class Asteroid:
         ----------
         x - Array of x coordinates.
         y - Array of y coordinates.
-        x0 - Float of reference x coordinate.
-        y0 - Float of reference y coordinate.
+        # change later :p
 
         Returns
         -------
@@ -86,7 +85,7 @@ class Asteroid:
         phase_angle - Array of phase angles for each point in the grid.
         """
         r_2d = math.sqrt(x**2 + y**2)
-        delta_2d = math.sqrt((x - x0)**2 + (y - y0)**2)
-        phase_angle_2d = math.acos((x * x0 + y * y0) / (r_2d * delta_2d))
+        delta_2d = math.sqrt((x - 1)**2 + (y - 1)**2)
+        phase_angle_2d = math.acos((r_2d**2 + delta_2d**2 - 1) / (2 * r_2d * delta_2d))
 
         return r_2d, delta_2d, phase_angle_2d
