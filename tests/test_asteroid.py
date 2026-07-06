@@ -173,9 +173,17 @@ class Test_Asteroid:
 
         ast = Asteroid(diameter=3.6, albedo=0.14, G=0.15)
         X, Y = ast.mesh_grid(x, y)
+        r_2d, delta_2d, phase_angle_2d = ast.cartesian_grid(X, Y)
 
         assert np.array_equal(X, expected_X)
         assert np.array_equal(Y, expected_Y)
 
-        # WIP, feels like I'm missing more to the mesh grid but this is an okay start
-        # Probably need to mesh the cartsian grid as well using r, delta, and phase angle values 
+        expected_r_2d = np.array([[1.0, np.sqrt(5.0)], [1.0, np.sqrt(5.0)]])
+        expected_delta_2d = np.array([[np.sqrt(2.0), np.sqrt(2.0)], [np.sqrt(2.0), np.sqrt(2.0)]])
+        expected_phase_angle_2d = np.array([[45.0, 18.0], [45.0, 18.0]])
+
+        assert r_2d == pytest.approx(expected_r_2d, abs=1e-3)
+        assert delta_2d == pytest.approx(expected_delta_2d, abs=1e-3)
+        assert phase_angle_2d == pytest.approx(expected_phase_angle_2d, abs=1.0)
+
+        # Ask mentors to check if correct :) otherwise, keep working to fix meshgrid!! 
