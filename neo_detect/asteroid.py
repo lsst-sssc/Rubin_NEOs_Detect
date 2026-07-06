@@ -61,14 +61,7 @@ class Asteroid:
         m = self.H + 5 * math.log10(r * delta) - 2.5 * math.log10(phi)
 
         return m
-  
-    # r = sqrt(x^2 + y^2) 
-    # delta = sqrt((x -x0)^2 + (y - y0)^2)
-    # phase_angle = arccos((x*x0 + y*y0) / (r * delta))
-    # Basis for Cartesian grid 
-    # Calculate for Cartesian grid of x and y coordinates 
-    # x = np.linspace(-10, 10, 100) maybe idk??
-    # y = np.linspace(-10, 10, 100)
+
     def cartesian_grid(self, x, y):
         """
         Computes the Cartesian grid for a given set of x and y coordinates, and a reference point (x0, y0).
@@ -101,15 +94,31 @@ class Asteroid:
         float
             Apparent magnitude, m
         """
-        # For now, we will use a placeholder for r, delta, and phase_angle based on the date.
-        # In a real implementation, these values would be computed based on the asteroid's orbit and the date.
         if date == '2026-07-02':
-            r = 1.414  # Placeholder value for distance from Sun in AU
-            delta = 1.0  # Placeholder value for distance from Earth in AU
-            phase_angle = 45.0  # Placeholder value for phase angle in degrees
+            r = 1.414 
+            delta = 1.0 
+            phase_angle = 45.0  
         else:
             raise ValueError("Date not supported in this placeholder implementation.")
 
         m = self.apparent_magnitude(r, delta, phase_angle)
 
         return m
+    
+    def mesh_grid(self, x, y):
+        """
+        Computes the mesh grid for a given set of x and y coordinates.
+
+        Parameters
+        ----------
+        x - Array of x coordinates.
+        y - Array of y coordinates.
+
+        Returns
+        -------
+        X - 2D array of x coordinates.
+        Y - 2D array of y coordinates.
+        """
+        X, Y = np.meshgrid(x, y, indexing='xy')
+        
+        return X, Y

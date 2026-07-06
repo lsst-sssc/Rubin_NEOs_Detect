@@ -164,6 +164,18 @@ class Test_Asteroid:
 
         assert m == pytest.approx(expected_m, abs = 0.1)
 
-
-    
+    def test_mesh_grid(self):
+        x = np.array([0.0, 2.0])
+        y = np.array([-1.0, 1.0])
         
+        expected_X = np.array([[0.0, 2.0], [0.0, 2.0]])
+        expected_Y = np.array([[-1.0, -1.0], [1.0, 1.0]])
+
+        ast = Asteroid(diameter=3.6, albedo=0.14, G=0.15)
+        X, Y = ast.mesh_grid(x, y)
+
+        assert np.array_equal(X, expected_X)
+        assert np.array_equal(Y, expected_Y)
+
+        # WIP, feels like I'm missing more to the mesh grid but this is an okay start
+        # Probably need to mesh the cartsian grid as well using r, delta, and phase angle values 
