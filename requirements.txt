@@ -4,4 +4,3 @@ pytest-cov
 sbpy
 numpy
 matplotlib
-datetime
