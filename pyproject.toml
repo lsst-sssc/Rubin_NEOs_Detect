@@ -1,0 +1,14 @@
+[project]
+name = "rubin-neos-detect"
+version = "0.1.0"
+description = "Code for simulating detection of NEOs with Rubin"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipython>=9.15.0",
+    "matplotlib>=3.11.0",
+    "numpy>=2.5.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "sbpy>=0.6.0",
+]
