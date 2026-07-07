@@ -1,8 +1,10 @@
 from datetime import datetime
+from dataclasses import dataclass
 
+
+@dataclass
 class Constant_Depth:
-    def __init__(self):
-        self.depth = 23.70 # Rubin u-filter m5 magnitude 
+    m5_depth: float = 24.52  # Rubin r-filter m5 magnitude
 
     def depth(self, date: datetime) -> float:
         """
@@ -20,4 +22,4 @@ class Constant_Depth:
         float
             The constant depth.
         """
-        return self.depth
+        return self.m5_depth
