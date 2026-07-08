@@ -22,22 +22,48 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None):
     mag_lim = depth_model.depth(datetime.now())
 
     # Create Cartesian grid here
-    x, y = None, None  # Placeholder for grid creation logic
-    ### x, y = asteroid.cartesian_grid()
+    x, y = np.array([0.0, 2.0]), np.array([-1.0, 1.0])
+    x, y = asteroid.mesh_grid()
 
     # Convert Cartesian grid to distance and phase angle here
-    ### r, delta, phase_angle = asteroid.cartesian_grid(x, y)
+    r, delta, phase_angle = asteroid.cartesian_grid(x, y)
 
     # Compute apparent magnitude for each point in the grid
     mag = np.full_like(x, np.nan)
-    ### mag = asteroid.apparent_magnitude(r, delta, phase_angle)
+    mag = asteroid.apparent_magnitude(r, delta, phase_angle)
 
+
+    # Filled in missing values for mesh grid, cartesian conversion, and apparent magnitude calculation. Should be correct but confirm with mentors 
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # Future refinement: Calculate elongation angle and filter out points with elongation < 30 degrees
     # Hint: use dot product to compute elongation angle between Sun and asteroid as seen from Earth
 
+    def elongation_angle(sun_vector, asteroid_vector):
+        """Computes the elongation angle between the Sun and the asteroid as seen from Earth
+        """
+        # Compute the dot product
+        dot_product = np.dot(sun_vector, asteroid_vector)
+
+        # Compute the magnitudes of both vectors
+        sun_magnitude = np.linalg.norm(sun_vector)
+        asteroid_magnitude = np.linalg.norm(asteroid_vector)
+
+        # Compute the cosine of the angle
+        cos_angle = dot_product / (sun_magnitude * asteroid_magnitude)
+
+        # Clamp the cosine to the range [-1, 1] to avoid numerical errors
+        cos_angle = np.clip(cos_angle, -1.0, 1.0)
+
+        # Compute and return the angle in degrees
+        return np.degrees(np.arccos(cos_angle))
+
     # Create a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
+    # app_mag <= lim_mag mask, apply m5 magnitude to array of magnitudes for detectable points
     # Later: add in mask from elongation angle filter
+
+
     detectable_mask = mag <= mag_lim
 
     return {
