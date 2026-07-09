@@ -23,7 +23,7 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None):
 
     # Create Cartesian grid here
     x, y = np.array([0.0, 2.0]), np.array([-1.0, 1.0])
-    x, y = asteroid.mesh_grid()
+    x, y = asteroid.mesh_grid(x, y)
 
     # Convert Cartesian grid to distance and phase angle here
     r, delta, phase_angle = asteroid.cartesian_grid(x, y)
@@ -37,7 +37,7 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None):
 
     -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    # Future refinement: Calculate elongation angle and filter out points with elongation < 30 degrees
+    # Future refinement: Calculate elongation angle and filter out points with elongation < 30 degrees (boolean mask again??)
     # Hint: use dot product to compute elongation angle between Sun and asteroid as seen from Earth
 
     def elongation_angle(sun_vector, asteroid_vector):
@@ -64,7 +64,14 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None):
     # Later: add in mask from elongation angle filter
 
 
-    detectable_mask = mag <= mag_lim
+    def boolean_mask(mag, mag_lim):
+        """Returns a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
+        """
+        return mag <= mag_lim
+
+    detectable_mask = boolean_mask(mag, mag_lim)
+
+
 
     return {
         "H": H,
