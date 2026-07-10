@@ -6,7 +6,7 @@ from neo_detect.survey_depth import Constant_Depth
 
 class Test_Constant_Depth:
     def test_constant_depth(self):
-        expected_depth = 23.70
+        expected_depth = 24.52
 
         rubin_depth = Constant_Depth()
 

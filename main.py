@@ -61,6 +61,7 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
     
     filter_mask = elongation_angle(sun_vector, asteroid_vector, earth_vector) >= 30.0
 
+
     
     # Create a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
     # app_mag <= lim_mag mask, apply m5 magnitude to array of magnitudes for detectable point
