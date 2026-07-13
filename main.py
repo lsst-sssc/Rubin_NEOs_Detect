@@ -101,3 +101,13 @@ if __name__ == "__main__":
 
     # Plot results (we pass in diameter and albedo for caption purposes)
     plot_candle_flame(results, diameter, albedo)
+
+
+
+    # separate jupyter notebook, plot for 1200x1200 grid of x and y values, with each point returning ra, dec, and phase angle
+    # x = np.linspace(-2, 0, 1200)
+    # y = np.linspace(-1, 1, 1200) 
+    # each point should return r, delta, and phase
+
+    # then plot functions heliocentric or geocentric distances to check pattern
+    # refer to jupyter notebook 'grid_check.ipynb' 
