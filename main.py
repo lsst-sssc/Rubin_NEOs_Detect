@@ -11,31 +11,51 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None):
 
     if depth_model is None:
         depth_model = Constant_Depth()
-        # Create an asteroid object
-        asteroid = Asteroid(diameter=diameter, albedo=albedo, G=G)
-        # Compute the absolute magnitude H from diameter and albedo
-        H = asteroid.abs_mag()
-        
-        # Get the limiting magnitude from the depth model
-        mag_lim = depth_model.depth(datetime.now())
-        
-        # Create Cartesian grid here
-        x, y = np.array([0.0, 2.0]), np.array([-1.0, 1.0])
-        x, y = asteroid.mesh_grid(x, y)
-        
-        # Convert Cartesian grid to distance and phase angle here
-        r, delta, phase_angle = asteroid.cartesian_grid(x, y)
 
-        # Compute apparent magnitude for each point in the grid
-        mag = np.full_like(x, np.nan)
-        mag = asteroid.apparent_magnitude(r, delta, phase_angle)
+    # Create an asteroid object
+    asteroid = Asteroid(diameter=diameter, albedo=albedo, G=G)
+    # Compute the absolute magnitude H from diameter and albedo
+    H = asteroid.abs_mag()
 
+    # Get the limiting magnitude from the depth model
+    mag_lim = depth_model.depth(datetime.now())
+
+    # Create Cartesian grid here
+    # TL: This needs modifying to be the range of 1200 x 1200 grid of x and y values,
+    #  as you did in the notebook.
+    x, y = np.array([0.0, 2.0]), np.array([-1.0, 1.0])
+    x, y = asteroid.mesh_grid(x, y)
+
+    # Convert Cartesian grid to distance and phase angle here
+    r, delta, phase_angle = asteroid.cartesian_grid(x, y)
+
+    # Compute apparent magnitude for each point in the grid
+    mag = np.full_like(x, np.nan)
+    mag = asteroid.apparent_magnitude(r, delta, phase_angle)
+
+    # Create a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
+    detectable_mask = boolean_mask(mag, mag_lim)
 
     # Filled in missing values for mesh grid, cartesian conversion, and apparent magnitude calculation. Should be correct but confirm with mentors 
 
     # Future refinement: Calculate elongation angle and filter out points with elongation < 30 degrees (boolean mask again??)
     # Hint: use dot product to compute elongation angle between Sun and asteroid as seen from Earth
     # Reference: https://community.lsst.org/t/dp0-3-lacks-solar-elongation-angle-data/9355/5 (Hopefully this is correct)
+
+    # TL: Add call to elongation_angle function here, and filter out points with 
+    # elongation < 30 degrees. Return a boolean mask of where elongation >= 30 degrees. 
+    # Then combine this mask with the detectable_mask to get the final mask of detectable 
+    # points.
+
+    # Return results as a dictionary
+    return {
+        "H": H,
+        "mag_lim": mag_lim,
+        "x": x,
+        "y": y,
+        "mag": mag,
+        "detectable_mask": detectable_mask
+        }
 
 def elongation_angle(sun_vector, asteroid_vector, earth_vector):
     """Computes the elongation angle between the Sun and an asteroid as seen from Earth using a shared coordinate system.
