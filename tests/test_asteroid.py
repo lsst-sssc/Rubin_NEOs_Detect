@@ -187,3 +187,27 @@ class Test_Asteroid:
         assert phase_angle_2d == pytest.approx(expected_phase_angle_2d, abs=1.0)
 
         # Ask mentors to check if correct :) otherwise, keep working to fix meshgrid!! 
+
+    # Convert phase_function and apparent_magnitude to accept arrays of phase angles and distances and return array of results
+
+    def test_phase_function_array(self):
+        expected_phi = np.array([1.0, 0.0535, 0.0])
+        phase_angles = np.array([0.0, 90.0, 180.0])
+
+        ast = Asteroid(diameter=30, albedo=0.14, G=0.15)
+        phi = ast.phase_function(phase_angles)
+
+        assert np.allclose(phi, expected_phi, atol=1e-3)
+
+    def test_apparent_magnitude_array(self):
+        expected_m = np.array([15.0, 16.3, 31.3])
+        r = np.array([1.0, 1.0, 1.0])
+        delta = np.array([1.0, 1.0, 1.0])
+        phase_angles = np.array([0.0, 30.0, 30.0])
+
+        ast = Asteroid(diameter=3600, albedo=0.14, G=0.15)
+        m = ast.apparent_magnitude(r, delta, phase_angles)
+
+        assert np.allclose(m, expected_m, atol=0.1)
+
+        
