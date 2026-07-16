@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from neo_detect.asteroid import Asteroid
 from neo_detect.survey_depth import Constant_Depth
@@ -92,18 +93,7 @@ def boolean_mask(mag, mag_lim):
     """
     return mag <= mag_lim
 
-detectable_mask = boolean_mask(mag, mag_lim)
-
-return {
-    "H": H,
-    "mag_lim": mag_lim,
-    "x": x,
-    "y": y,
-    "mag": mag,
-    "detectable_mask": detectable_mask
-    }
-
-def plot_candle_flame(results, diameter, albedo):
+def plot_candle_flame(results, diameter, albedo, savepath=None):
     pass
 
 
