@@ -127,3 +127,5 @@ if __name__ == "__main__":
 
     # Plot results (we pass in diameter and albedo for caption purposes)
     plot_candle_flame(results, diameter, albedo)
+
+
