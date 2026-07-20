@@ -82,7 +82,7 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
     asteroid_from_earth = asteroid_vector # - earth_vector
 
     # Compute the dot product
-#    dot_product = np.dot(sun_from_earth, asteroid_from_earth)
+    dot_product = np.dot(sun_from_earth, asteroid_from_earth, out=None)
     dot_product = sun_from_earth[0] * asteroid_from_earth[0] + sun_from_earth[1] * asteroid_from_earth[1] + sun_from_earth[2] * asteroid_from_earth[2]
     sun_magnitude = np.hypot(sun_from_earth[0], sun_from_earth[1])
     asteroid_magnitude = np.hypot(asteroid_from_earth[0], asteroid_from_earth[1], asteroid_from_earth[2])
@@ -96,9 +96,21 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
 
     # Return the angle in degrees
     return np.degrees(np.arccos(cos_angle))
-
+    
 def plot_candle_flame(results, diameter, albedo, savepath=None):
-    pass
+    """Plots the detectable region for a given asteroid.
+    """
+    plt.figure(figsize=(8, 6))
+    plt.imshow(results['mag'], extent=[results['x'].min(), results['x'].max(), results['y'].min(), results['y'].max()], origin='lower', cmap='twilight_shifted', aspect='auto')
+
+    plt.contourf(results['x'], results['y'], results['detectable_mask'], levels=[0.5], colors='orange', alpha=0.5)
+    plt.title('Detectable Region for Asteroid: D = {:.0f} m, p_V = {:.2f}'.format(diameter, albedo))
+    plt.xlabel('Perpendicular Distance (AU)')
+    plt.ylabel('Distance along Sun-observer axis (AU)')
+    plt.gca().set_aspect('equal', adjustable='box')
+    if savepath:
+        plt.savefig(savepath, dpi=300)
+    plt.show()
 
 
 if __name__ == "__main__":
