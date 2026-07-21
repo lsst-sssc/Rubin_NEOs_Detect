@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.linalg import det
 
 from neo_detect.asteroid import Asteroid
 from neo_detect.survey_depth import Constant_Depth
@@ -128,16 +129,25 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
 def plot_candle_flame(results, diameter, albedo, savepath=None):
     """Plots the detectable region for a given asteroid.
     """
-    plt.figure(figsize=(8, 6))
-    plt.imshow(results['mag'], extent=[results['x'].min(), results['x'].max(), results['y'].min(), results['y'].max()], origin='lower', cmap='twilight_shifted', aspect='auto')
 
-    plt.contourf(results['x'], results['y'], results['detectable_mask'], levels=[0.5, 1.5], colors='orange', alpha=0.5)
-    plt.title('Detectable Region for Asteroid: D = {:.0f} m, p_V = {:.2f}'.format(diameter, albedo))
-    plt.xlabel('Perpendicular Distance (AU)')
-    plt.ylabel('Distance along Sun-observer axis (AU)')
-    plt.gca().set_aspect('equal', adjustable='box')
-    if savepath:
-        plt.savefig(savepath, dpi=300)
+    X = results['x']
+    Y = results['y']
+    ax = plt.gca()
+    det = results['detectable_mask'].astype(float)
+
+# Filled detectable region.
+    ax.contourf(X, Y, det, levels=[0.5, 1.5], colors=["orange"])
+    ax.contour(X, Y, det, levels=[0.5], colors=["darkorange"], linewidths=1.0)
+    ax.tick_params(axis='x', rotation=45)
+    ax.set_xlabel("Perpendicular Distance (AU)")
+    ax.set_ylabel("Distance from Sun-Observer (AU)")
+    ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}")
+    ax.set_aspect('equal', adjustable='box')
+    ax.scatter(0.0, 0.0, marker='*', s=200, color='gold', edgecolor='black')
+    ax.scatter(1.0, 0.0, color='lightblue', s=100, label='Target Point')
+    ax.set_xlim(-1.0, 2.0)
+    ax.set_ylim(-1.0, 1.0) 
+
     plt.show()
 
 if __name__ == "__main__":
