@@ -37,7 +37,9 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
 
     # Compute apparent magnitude for each point in the grid
     mag = np.full_like(x, np.nan)
-    mag[valid] = asteroid.apparent_magnitude(r[valid], delta[valid], phase_angle[valid])
+    valid_indices = np.argwhere(valid)
+    for i, j in valid_indices:
+        mag[i, j] = asteroid.apparent_magnitude(r[i, j], delta[i, j], phase_angle[i, j])
 
     # Create a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
     brightness_mask = boolean_mask(mag, mag_lim)
@@ -75,20 +77,19 @@ def boolean_mask(mag, mag_lim):
 def elongation_angle(sun_vector, asteroid_vector, earth_vector):
     """Computes the elongation angle between the Sun and an asteroid as seen from Earth using a shared coordinate system.
     """
-    # Reference: https://community.lsst.org/t/dp0-3-lacks-solar-elongation-angle-data/9355/5 (Hopefully this is correct)
+    # Reference: https://community.lsst.org/t/dp0-3-lacks-solar-elongation-angle-data/9355/5
 
     # Compute the relative vectors from Earth to Sun and Earth to Asteroid
-    sun_from_earth = sun_vector # - earth_vector
-    asteroid_from_earth = asteroid_vector # - earth_vector
+    sun_from_earth = np.asarray(sun_vector)
+    asteroid_from_earth = np.asarray(asteroid_vector)
 
-    # Compute the dot product
-    dot_product = np.dot(sun_from_earth, asteroid_from_earth, out=None)
-    dot_product = sun_from_earth[0] * asteroid_from_earth[0] + sun_from_earth[1] * asteroid_from_earth[1] + sun_from_earth[2] * asteroid_from_earth[2]
-    sun_magnitude = np.hypot(sun_from_earth[0], sun_from_earth[1])
-    asteroid_magnitude = np.hypot(asteroid_from_earth[0], asteroid_from_earth[1], asteroid_from_earth[2])
+
+    # Compute the dot product 
+    dot_product = np.sum(sun_from_earth[:, None, None] * asteroid_from_earth, axis=0)
+
     # Compute the magnitudes of both relative vectors
-#    sun_magnitude = np.linalg.norm(sun_from_earth)
-#    asteroid_magnitude = np.linalg.norm(asteroid_from_earth)
+    sun_magnitude = np.linalg.norm(sun_from_earth)
+    asteroid_magnitude = np.linalg.norm(asteroid_from_earth, axis=0)
 
     # Compute and clamp the cosine value
     cos_angle = dot_product / (sun_magnitude * asteroid_magnitude)
@@ -96,6 +97,33 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
 
     # Return the angle in degrees
     return np.degrees(np.arccos(cos_angle))
+
+# Suggested debug to code below, see if this works for elongation_angle. If it does, we can remove the previous version and replace it with this one.
+
+# # def elongation_angle(sun_vector, asteroid_vector, earth_vector):
+#     """Computes the elongation angle between the Sun and an asteroid as seen from Earth using a shared coordinate system.
+#     """
+#     # Reference: https://community.lsst.org/t/dp0-3-lacks-solar-elongation-angle-data/9355/5 (Hopefully this is correct)
+
+#     # Compute the relative vectors from Earth to Sun and Earth to Asteroid
+#     sun_from_earth = sun_vector # - earth_vector
+#     asteroid_from_earth = asteroid_vector # - earth_vector
+
+#     # Compute the dot product
+#     dot_product = np.dot(sun_from_earth, asteroid_from_earth, out=None)
+#     dot_product = sun_from_earth[0] * asteroid_from_earth[0] + sun_from_earth[1] * asteroid_from_earth[1] + sun_from_earth[2] * asteroid_from_earth[2]
+#     sun_magnitude = np.hypot(sun_from_earth[0], sun_from_earth[1])
+#     asteroid_magnitude = np.hypot(asteroid_from_earth[0], asteroid_from_earth[1], asteroid_from_earth[2])
+#     # Compute the magnitudes of both relative vectors
+#     sun_magnitude = np.linalg.norm(sun_from_earth)
+#     asteroid_magnitude = np.linalg.norm(asteroid_from_earth)
+
+#     # Compute and clamp the cosine value
+#     cos_angle = dot_product / (sun_magnitude * asteroid_magnitude)
+#     cos_angle = np.clip(cos_angle, -1.0, 1.0)
+
+#     # Return the angle in degrees
+#     return np.degrees(np.arccos(cos_angle))
     
 def plot_candle_flame(results, diameter, albedo, savepath=None):
     """Plots the detectable region for a given asteroid.
@@ -103,7 +131,7 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     plt.figure(figsize=(8, 6))
     plt.imshow(results['mag'], extent=[results['x'].min(), results['x'].max(), results['y'].min(), results['y'].max()], origin='lower', cmap='twilight_shifted', aspect='auto')
 
-    plt.contourf(results['x'], results['y'], results['detectable_mask'], levels=[0.5], colors='orange', alpha=0.5)
+    plt.contourf(results['x'], results['y'], results['detectable_mask'], levels=[0.5, 1.5], colors='orange', alpha=0.5)
     plt.title('Detectable Region for Asteroid: D = {:.0f} m, p_V = {:.2f}'.format(diameter, albedo))
     plt.xlabel('Perpendicular Distance (AU)')
     plt.ylabel('Distance along Sun-observer axis (AU)')
@@ -111,7 +139,6 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     if savepath:
         plt.savefig(savepath, dpi=300)
     plt.show()
-
 
 if __name__ == "__main__":
 
@@ -124,6 +151,8 @@ if __name__ == "__main__":
 
     print(f"Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}  ->  H = {results['H']:.2f}")
     print(f"Limiting magnitude: m_lim = {results['mag_lim']:.2f}")
+
+    print(f"Detectable mask: {results['detectable_mask'].sum()} pixels")
 
     # Plot results (we pass in diameter and albedo for caption purposes)
     plot_candle_flame(results, diameter, albedo)
