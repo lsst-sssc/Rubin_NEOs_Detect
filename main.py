@@ -147,7 +147,7 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     ax.scatter(1.0, 0.0, color='lightblue', s=100, label='Target Point')
     ax.set_xlim(-1.0, 2.0)
     ax.set_ylim(-1.0, 1.0) 
-
+    ax.legend(['Sun', 'Earth'])
     plt.show()
 
 if __name__ == "__main__":
