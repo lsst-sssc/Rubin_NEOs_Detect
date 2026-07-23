@@ -19,3 +19,13 @@ class Test_Calc_Colors:
         assert 'V-i' in result_sed
         assert 'V-z' in result_sed
         assert 'V-y' in result_sed
+
+    def filter_test(self):
+        expected_colors = {
+            'V-g': -0.254,
+            'V-r': 0.213,
+            'V-i': 0.356,
+            'V-z': 0.322,
+            'V-y': 0.314
+        }
+        assert all(abs(calc_colors()['S.dat'][color] - expected_colors[color]) < 0.01 for color in expected_colors)
