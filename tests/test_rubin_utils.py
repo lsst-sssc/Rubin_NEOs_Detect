@@ -13,9 +13,11 @@ class Test_Calc_Colors:
         sed_dir = None
         result = calc_colors(sedname, sed_dir)
         assert isinstance(result, dict)
-        assert 'V-u' in result
-        assert 'V-g' in result
-        assert 'V-r' in result
-        assert 'V-i' in result
-        assert 'V-z' in result
-        assert 'V-y' in result
+        assert sedname in result
+        result_sed = result[sedname]
+        assert 'V-u' in result_sed
+        assert 'V-g' in result_sed
+        assert 'V-r' in result_sed
+        assert 'V-i' in result_sed
+        assert 'V-z' in result_sed
+        assert 'V-y' in result_sed

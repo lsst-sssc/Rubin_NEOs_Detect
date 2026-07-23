@@ -39,7 +39,7 @@ def calc_colors(sedname='S.dat', filter_dir=None, sed_dir=None):
    # Loop over Rubin filters and calculate colors
    for f in filterlist:
       # Calculate Rubin magnitude using mo_sed.calc_mag(lsst[f])
-      # Calculate color as V - Rubin magnitude and store in colors[sedname][f]
+      # Calculate color as V - Rubin magnitude and store in colors[sedname][color_name] where color_name is f"V-{f}"
       pass
 
    return colors
