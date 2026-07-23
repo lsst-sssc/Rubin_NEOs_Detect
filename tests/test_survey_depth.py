@@ -4,7 +4,6 @@ import pathlib
 
 import pytest
 
-from neo_detect.asteroid import Asteroid
 from neo_detect.survey_depth import Constant_Depth, OpSim_Depth
 
 # A small (~50 row) sample of real observations drawn from the Rubin

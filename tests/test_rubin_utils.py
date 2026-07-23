@@ -1,5 +1,3 @@
-import pytest
-
 from neo_detect.rubin_utils import calc_colors
 
 class Test_Calc_Colors:
