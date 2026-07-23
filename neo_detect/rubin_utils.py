@@ -56,3 +56,22 @@ def calc_colors(sedname='S.dat', filter_dir=None, sed_dir=None):
       colors[sedname][f"V-{f}"] = vmag - mo_mag
 
    return colors
+
+def filter_plot_colors():
+   """Return a dictionary of colors for plotting the Rubin filters
+
+   Returns
+   -------
+   dict
+       Dictionary of colors for plotting the Rubin filters
+   """
+   filter_colors = {
+        "u": "#1600EA",
+        "g": "#31DE1F",
+        "r": "#B52626",
+        "i": "#370201",
+        "z": "#BA52FF",
+        "y": "#61A2B3",
+   }
+
+   return filter_colors
