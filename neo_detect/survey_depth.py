@@ -1,10 +1,9 @@
 import sqlite3
+from dataclasses import dataclass
+from datetime import datetime
 
 import pandas as pd
-
 from astropy.time import Time
-from datetime import date, datetime
-from dataclasses import dataclass
 
 
 @dataclass
