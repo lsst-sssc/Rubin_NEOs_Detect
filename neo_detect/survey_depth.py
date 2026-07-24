@@ -2,7 +2,7 @@ import sqlite3
 
 import pandas as pd
 
-
+from astropy.time import Time
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -79,23 +79,18 @@ class OpSim_Depth:
         float
             The five-sigma limiting magnitude of the nearest matching visit.
         """
-        raise NotImplementedError
-        # Steps to implement:
-        # 1. Convert `date` to an MJD on the SAME timescale as the OpSim
-        #    column. Per the schema docs, observationStartMJD is UTC (even
-        #    though the rest of Rubin uses TAI), so build an astropy Time with
-        #    the timescale matching `date` and read Time(...).utc.mjd -- do not
-        #    silently mix UTC and TAI (~37 s error). If `date` is naive, decide
-        #    and document which timescale it is assumed to be in.
-        # 2. Restrict self.observations to rows where band == `band`, and guard
-        #    against an empty selection (no coverage in that band).
-        # 3. Find the row minimising abs(observationStartMJD - target_mjd),
-        #    e.g. (subset["observationStartMJD"] - target_mjd).abs().idxmin().
-        # 4. Optionally reject the match if the nearest visit is further from
-        #    `date` than some tolerance (i.e. no real observation near `date`).
-        # 5. Return that row's fiveSigmaDepth. Consider whether the caller also
-        #    needs the matched MJD / airmass (the actual observing conditions),
-        #    in which case return a small record instead of a bare float.
+        target_mjd = Time(date, scale="utc").mjd
+        # if TAI, use Time(date, scale="tai").utc.mjd instead but be wary of mixing timescales
+        
+        subset = self.observations[self.observations["band"] == band]
+        if subset.empty:
+            raise ValueError(f"No observations available in band {band}")
+
+        # Find the row with the minimum absolute difference in MJD
+        nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
+        nearest_row = subset.loc[nearest_idx]
+
+        return nearest_row["fiveSigmaDepth"]
 
     def _read_observations(self) -> pd.DataFrame:
         query = f"SELECT {', '.join(self.COLUMNS)} FROM observations"
@@ -103,4 +98,24 @@ class OpSim_Depth:
         try:
             return pd.read_sql_query(query, con)
         finally:
-            con.close()
+            con.close()   
+
+
+
+
+    # Steps to implement:
+    # 1. Convert `date` to an MJD on the SAME timescale as the OpSim
+    #    column. Per the schema docs, observationStartMJD is UTC (even
+    #    though the rest of Rubin uses TAI), so build an astropy Time with
+    #    the timescale matching `date` and read Time(...).utc.mjd -- do not
+    #    silently mix UTC and TAI (~37 s error). If `date` is naive, decide
+    #    and document which timescale it is assumed to be in.
+    # 2. Restrict self.observations to rows where band == `band`, and guard
+    #    against an empty selection (no coverage in that band).
+    # 3. Find the row minimising abs(observationStartMJD - target_mjd),
+    #    e.g. (subset["observationStartMJD"] - target_mjd).abs().idxmin().
+    # 4. Optionally reject the match if the nearest visit is further from
+    #    `date` than some tolerance (i.e. no real observation near `date`).
+    # 5. Return that row's fiveSigmaDepth. Consider whether the caller also
+    #    needs the matched MJD / airmass (the actual observing conditions),
+    #    in which case return a small record instead of a bare float.
