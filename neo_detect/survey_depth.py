@@ -104,7 +104,13 @@ class OpSim_Depth:
         
         return float(nearest_row["fiveSigmaDepth"])
     
-
+    def _read_observations(self) -> pd.DataFrame:
+            query = f"SELECT {', '.join(self.COLUMNS)} FROM observations"
+            con = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
+            try:
+              return pd.read_sql_query(query, con)
+            finally:
+                con.close()  
 
 
 
