@@ -1,4 +1,5 @@
-import os
+import os 
+import matplotlib
 import matplotlib.pyplot as plt
 
 
@@ -77,3 +78,30 @@ def filter_plot_colors():
    }
 
    return filter_colors
+
+def filter_figure_plot(): 
+   """Plot the Rubin filters v V-band with colors for plotting
+
+   Returns
+   -------
+   None
+   """
+   filter_colors = filter_plot_colors()
+   filterlist = ("u", "g", "r", "i", "z", "y")
+   plt.figure(figsize=(10, 6))
+   for f in filterlist:
+      bp = Bandpass()
+      bp.read_throughput(os.path.join(get_data_dir(), "throughputs/baseline", f"total_{f}.dat"))
+      plt.plot(bp.wavelen, bp.sb, color=filter_colors[f], label=f)
+   v_band = Bandpass()
+   v_band.read_throughput(os.path.join(get_data_dir(), "movingObjects", "harris_V.dat"))
+   plt.plot(v_band.wavelen, v_band.sb, color="black", label="V-band", linestyle="--")
+   plt.xlim(300, 1200)
+   plt.ylim(0, 1.05)
+   plt.xlabel("Wavelength (nm)")
+   plt.ylabel("Throughput")
+   plt.title("Rubin Filters and V-Band Filters")
+   plt.legend()
+   plt.grid()
+   plt.show()
+  

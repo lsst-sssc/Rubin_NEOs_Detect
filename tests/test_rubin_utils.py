@@ -13,6 +13,24 @@ EXPECTED_COLORS = {
         'V-z':  0.4006,
         'V-y':  0.4094,
     },
+
+    'C.dat': {
+        'V-u': -1.5080,
+        'V-g': -0.2931,
+        'V-r':  0.1761,
+        'V-i':  0.2927,
+        'V-z':  0.2980,
+        'V-y':  0.3026,
+    },
+
+    'D.dat': {
+        'V-u': -1.6287,
+        'V-g': -0.3380,
+        'V-r':  0.2311,
+        'V-i':  0.4470,
+        'V-z':  0.5320,
+        'V-y':  0.6243,
+    },
 }
 
 
@@ -28,6 +46,36 @@ class Test_Calc_Colors:
         assert isinstance(result, dict)
         assert sedname in result
         result_sed = result[sedname]
+
+        for color, expected in EXPECTED_COLORS[sedname].items() :
+            assert color in result_sed
+            assert abs(result_sed[color] - expected) < 0.01, (
+                f"{sedname} {color}: {result_sed[color]:.3f} != {expected}"
+            )
+
+    def test_calc_colors_C_type(self):
+        sedname = 'C.dat'
+        sed_dir = None
+        result = calc_colors(sedname, sed_dir)
+        assert isinstance(result, dict)
+        assert sedname in result
+        result_sed = result[sedname]
+
+        for color, expected in EXPECTED_COLORS[sedname].items() :
+            assert color in result_sed
+            assert abs(result_sed[color] - expected) < 0.01, (
+                f"{sedname} {color}: {result_sed[color]:.3f} != {expected}"
+            )
+    
+
+    def test_calc_colors_D_type(self):
+        sedname = 'D.dat'
+        sed_dir = None
+        result = calc_colors(sedname, sed_dir)
+        assert isinstance(result, dict)
+        assert sedname in result
+        result_sed = result[sedname]
+
         for color, expected in EXPECTED_COLORS[sedname].items() :
             assert color in result_sed
             assert abs(result_sed[color] - expected) < 0.01, (
