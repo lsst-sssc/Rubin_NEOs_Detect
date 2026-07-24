@@ -4,3 +4,5 @@ pytest-cov
 sbpy
 numpy
 matplotlib
+pandas
+astropy
