@@ -3,7 +3,7 @@ import sqlite3
 import pandas as pd
 
 from astropy.time import Time
-from datetime import datetime
+from datetime import date, datetime
 from dataclasses import dataclass
 
 
@@ -79,9 +79,14 @@ class OpSim_Depth:
         float
             The five-sigma limiting magnitude of the nearest matching visit.
         """
-        target_mjd = Time(date, scale="utc").mjd
-        # if TAI, use Time(date, scale="tai").utc.mjd instead but be wary of mixing timescales
+        if not isinstance(date, datetime):
+            raise TypeError(f"date must be a datetime, got {type(date)}")
         
+        # Convert the input date to MJD in UTC, since observationStartMJD is in UTC
+        target_mjd = Time(date, scale="utc").mjd
+        # If TAI, use Time(date, scale="tai").utc.mjd instead but be wary of mixing timescales
+        
+        # Restrict to the requested band and guard against an empty selection
         subset = self.observations[self.observations["band"] == band]
         if subset.empty:
             raise ValueError(f"No observations available in band {band}")
@@ -90,15 +95,15 @@ class OpSim_Depth:
         nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
         nearest_row = subset.loc[nearest_idx]
 
-        return nearest_row["fiveSigmaDepth"]
+        matched_mjd =float(nearest_row["observationStartMJD"])
+        delta_mjd = abs(matched_mjd - target_mjd)
 
-    def _read_observations(self) -> pd.DataFrame:
-        query = f"SELECT {', '.join(self.COLUMNS)} FROM observations"
-        con = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
-        try:
-            return pd.read_sql_query(query, con)
-        finally:
-            con.close()   
+        # Optionally, reject if the nearest visit is too far from the target date
+        if delta_mjd > 1.0:  # Example tolerance of 1 day
+            raise ValueError(f"No observations within 1 day of {date} in band {band}")
+        
+        return float(nearest_row["fiveSigmaDepth"])
+    
 
 
 
@@ -119,3 +124,5 @@ class OpSim_Depth:
     # 5. Return that row's fiveSigmaDepth. Consider whether the caller also
     #    needs the matched MJD / airmass (the actual observing conditions),
     #    in which case return a small record instead of a bare float.
+
+    # Reference in case of issues: https://community.lsst.org/t/midpointmjdtai-in-diasource-dp0-3/7866/5
