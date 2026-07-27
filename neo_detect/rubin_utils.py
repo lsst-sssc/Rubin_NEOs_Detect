@@ -1,10 +1,9 @@
-import os 
-import matplotlib
+import os
+
 import matplotlib.pyplot as plt
-
-
 from rubin_scheduler.data import get_data_dir
 from rubin_sim.phot_utils import Bandpass, Sed
+
     
 def calc_colors(sedname='S.dat', filter_dir=None, sed_dir=None):
    """Calculate the colors for a given asteroids SED
