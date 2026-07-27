@@ -13,3 +13,8 @@ dependencies = [
     "rubin-sim>=2.6.2",
     "sbpy>=0.6.0",
 ]
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+]
