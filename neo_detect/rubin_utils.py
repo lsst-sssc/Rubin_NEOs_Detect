@@ -113,55 +113,64 @@ class RubinDetection:
       'd': 'D.dat',
    }
 
-   def __init__(self, vmag, sed):   
-      
+   def __init__(self, vmag, sed="s", filter_dir=None, sed_dir=None):
       self.vmag = vmag
       self.sed = sed.lower()
-      self.expected_colors = calc_colors(self.SED_FILES[self.sed])
+      self.filter_dir = filter_dir
+      self.sed_dir = sed_dir
+      self._expected_colors = None
 
-   def transform_to_rubin(self, band):
-      """Transform V magnitude to Rubin band magnitude using the expected colors
+   def get_sedname(self, sed=None):
+      """Return the SED filename for a given SED label."""
+      sed_key = self.sed if sed is None else sed.lower()
+      return self.SED_FILES.get(sed_key, "S.dat")
 
-      Parameters
-      ----------
-      band : str
-          The Rubin band to transform to (one of u, g, r, i, z, y).
+   def get_expected_colors(self, sed=None):
+      """Return expected V-band to Rubin-band colors for the requested SED."""
+      sedname = self.get_sedname(sed)
+      if self._expected_colors is None:
+         self._expected_colors = {}
+      if sedname not in self._expected_colors:
+         self._expected_colors[sedname] = calc_colors(
+         sedname=sedname,
+            filter_dir=self.filter_dir,
+            sed_dir=self.sed_dir,
+         )[sedname]
+      return self._expected_colors[sedname]
 
-      Returns
-      -------
-      float
-          The transformed magnitude in the specified Rubin band.
+   def transform_Vmag(self, band, sed=None):
       """
-      if band not in self.expected_colors[self.SED_FILES[self.sed]]:
-          raise ValueError(f"Band {band} is not valid. Choose from {list(self.expected_colors[self.SED_FILES[self.sed]].keys())}")
+      Convert V magnitude to a Rubin-band magnitude.
 
-      color = self.expected_colors[self.SED_FILES[self.sed]][f"V-{band}"]
-      rubin_mag = self.vmag - color
-      return rubin_mag
-
-   def get_sedname(self):
-      """Get the SED filename based on the asteroid type
-
-      Returns
-      -------
-      str
-          The SED filename corresponding to the asteroid type.
+      Since calc_colors returns V - band, the band magnitude is:
+         transform_Vmag = Vmag - (V - band)
       """
-      if self.sed not in self.SED_FILES:
-          raise ValueError(f"SED type {self.sed} is not valid. Choose from {list(self.SED_FILES.keys())}")
-      return self.SED_FILES[self.sed]
+      colors = self.get_expected_colors(sed)
+      key = f"V-{band}"
+      if key not in colors:
+         raise KeyError(f"Band '{band}' not found in expected colors.")
+      return self.vmag - colors[key]
 
-   def get_expected_colors(self):
-      """Get the expected colors for the asteroid type
+   def all_Vmags(self, sed=None):
+      """Return magnitudes in all Rubin bands for the requested SED."""
+      colors = self.get_expected_colors(sed)
+      return {
+         band_key.split("-", 1)[1]: self.vmag - color
+         for band_key, color in colors.items()
+      }
 
-      Returns
-      -------
-      dict
-          A dictionary of expected colors for the asteroid type.
-      """
-      return self.expected_colors[self.SED_FILES[self.sed]]
+   def set_sed(self, sed):
+      """Change the active SED type."""
+      self.sed = sed.lower()
+      return self
+
+   def set_vmag(self, vmag):
+      """Change the stored V magnitude."""
+      self.vmag = vmag
+      return self
 
 
+# Doesn't work just yet, keep at it until it does something correctly 
 
 # get vmag into routine ??DONE??
 # transform vmag class <band>, class will take a band (g or whatever) **DONE**

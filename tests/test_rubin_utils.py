@@ -90,17 +90,16 @@ class Test_Calc_Colors:
         with pytest.raises(FileNotFoundError):
             calc_colors(sedname, sed_dir)
 
-    def test_transform_to_rubin(self):
+    def test_transform_Vmag(self):
         from neo_detect.rubin_utils import RubinDetection
 
         vmag = 18.0
         sed = 'S'
-        v_to_rubin = RubinDetection(vmag, sed)
-
+        rubin = RubinDetection(vmag, sed)
         for band in ['u', 'g', 'r', 'i', 'z', 'y']:
-            rubin_mag = v_to_rubin.transform_to_rubin(band)
-            expected_color = EXPECTED_COLORS[v_to_rubin.get_sedname()][f"V-{band}"]
-            expected_rubin_mag = vmag - expected_color
-            assert abs(rubin_mag - expected_rubin_mag) < 0.01, (
-                f"Band {band}: {rubin_mag:.3f} != {expected_rubin_mag:.3f}"
+            band_mag = rubin.transform_Vmag(band)
+            expected_color = EXPECTED_COLORS[rubin.get_sedname()][f'V-{band}']
+            expected_band_mag = vmag - expected_color
+            assert abs(band_mag - expected_band_mag) < 0.01, (
+                f"Band {band}: {band_mag:.3f} != {expected_band_mag:.3f}"
             )
