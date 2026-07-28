@@ -1,3 +1,5 @@
+import pytest
+
 from neo_detect.rubin_utils import calc_colors
 
 # Reference V-band colors per SED type. Add new SED types here as they arrive;
@@ -80,4 +82,25 @@ class Test_Calc_Colors:
             assert color in result_sed
             assert abs(result_sed[color] - expected) < 0.01, (
                 f"{sedname} {color}: {result_sed[color]:.3f} != {expected}"
+            )
+
+    def test_calc_colors_invalid_sed(self):
+        sedname = 'invalid_sed.dat'
+        sed_dir = None
+        with pytest.raises(FileNotFoundError):
+            calc_colors(sedname, sed_dir)
+
+    def test_transform_to_rubin(self):
+        from neo_detect.rubin_utils import RubinDetection
+
+        vmag = 18.0
+        sed = 'S'
+        v_to_rubin = RubinDetection(vmag, sed)
+
+        for band in ['u', 'g', 'r', 'i', 'z', 'y']:
+            rubin_mag = v_to_rubin.transform_to_rubin(band)
+            expected_color = EXPECTED_COLORS[v_to_rubin.get_sedname()][f"V-{band}"]
+            expected_rubin_mag = vmag - expected_color
+            assert abs(rubin_mag - expected_rubin_mag) < 0.01, (
+                f"Band {band}: {rubin_mag:.3f} != {expected_rubin_mag:.3f}"
             )

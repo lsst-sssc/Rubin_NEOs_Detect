@@ -103,4 +103,68 @@ def filter_figure_plot():
    plt.legend()
    plt.grid()
    plt.show()
-  
+
+class RubinDetection: 
+   """Class to handle Rubin detection calculations for asteroids
+   """
+   SED_FILES = {
+      's': 'S.dat',
+      'c': 'C.dat',
+      'd': 'D.dat',
+   }
+
+   def __init__(self, vmag, sed):   
+      
+      self.vmag = vmag
+      self.sed = sed.lower()
+      self.expected_colors = calc_colors(self.SED_FILES[self.sed])
+
+   def transform_to_rubin(self, band):
+      """Transform V magnitude to Rubin band magnitude using the expected colors
+
+      Parameters
+      ----------
+      band : str
+          The Rubin band to transform to (one of u, g, r, i, z, y).
+
+      Returns
+      -------
+      float
+          The transformed magnitude in the specified Rubin band.
+      """
+      if band not in self.expected_colors[self.SED_FILES[self.sed]]:
+          raise ValueError(f"Band {band} is not valid. Choose from {list(self.expected_colors[self.SED_FILES[self.sed]].keys())}")
+
+      color = self.expected_colors[self.SED_FILES[self.sed]][f"V-{band}"]
+      rubin_mag = self.vmag - color
+      return rubin_mag
+
+   def get_sedname(self):
+      """Get the SED filename based on the asteroid type
+
+      Returns
+      -------
+      str
+          The SED filename corresponding to the asteroid type.
+      """
+      if self.sed not in self.SED_FILES:
+          raise ValueError(f"SED type {self.sed} is not valid. Choose from {list(self.SED_FILES.keys())}")
+      return self.SED_FILES[self.sed]
+
+   def get_expected_colors(self):
+      """Get the expected colors for the asteroid type
+
+      Returns
+      -------
+      dict
+          A dictionary of expected colors for the asteroid type.
+      """
+      return self.expected_colors[self.SED_FILES[self.sed]]
+
+
+
+# get vmag into routine ??DONE??
+# transform vmag class <band>, class will take a band (g or whatever) **DONE**
+# take sed and default to s type as default **DONE**
+# add other c and d types later
+# copy expected colors dictionary and add it in here
