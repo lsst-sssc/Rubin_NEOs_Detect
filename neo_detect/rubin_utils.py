@@ -113,67 +113,13 @@ class RubinDetection:
       'd': 'D.dat',
    }
 
-   def __init__(self, vmag, sed="s", filter_dir=None, sed_dir=None):
-      self.vmag = vmag
-      self.sed = sed.lower()
-      self.filter_dir = filter_dir
-      self.sed_dir = sed_dir
-      self._expected_colors = None
 
-   def get_sedname(self, sed=None):
-      """Return the SED filename for a given SED label."""
-      sed_key = self.sed if sed is None else sed.lower()
-      return self.SED_FILES.get(sed_key, "S.dat")
-
-   def get_expected_colors(self, sed=None):
-      """Return expected V-band to Rubin-band colors for the requested SED."""
-      sedname = self.get_sedname(sed)
-      if self._expected_colors is None:
-         self._expected_colors = {}
-      if sedname not in self._expected_colors:
-         self._expected_colors[sedname] = calc_colors(
-         sedname=sedname,
-            filter_dir=self.filter_dir,
-            sed_dir=self.sed_dir,
-         )[sedname]
-      return self._expected_colors[sedname]
-
-   def transform_Vmag(self, band, sed=None):
-      """
-      Convert V magnitude to a Rubin-band magnitude.
-
-      Since calc_colors returns V - band, the band magnitude is:
-         transform_Vmag = Vmag - (V - band)
-      """
-      colors = self.get_expected_colors(sed)
-      key = f"V-{band}"
-      if key not in colors:
-         raise KeyError(f"Band '{band}' not found in expected colors.")
-      return self.vmag - colors[key]
-
-   def all_Vmags(self, sed=None):
-      """Return magnitudes in all Rubin bands for the requested SED."""
-      colors = self.get_expected_colors(sed)
-      return {
-         band_key.split("-", 1)[1]: self.vmag - color
-         for band_key, color in colors.items()
-      }
-
-   def set_sed(self, sed):
-      """Change the active SED type."""
-      self.sed = sed.lower()
-      return self
-
-   def set_vmag(self, vmag):
-      """Change the stored V magnitude."""
-      self.vmag = vmag
-      return self
 
 
 # Doesn't work just yet, keep at it until it does something correctly 
 
-# get vmag into routine ??DONE??
-# transform vmag class <band>, class will take a band (g or whatever) **DONE**
-# take sed and default to s type as default **DONE**
-# add other c and d types later
-# copy expected colors dictionary and add it in here
+# get vmag into routine 
+# transform vmag class <band>, class will take a band (g or whatever)
+# take sed and default to s type as default 
+# add other c and d types later 
+# copy expected colors dictionary and add it in here 
