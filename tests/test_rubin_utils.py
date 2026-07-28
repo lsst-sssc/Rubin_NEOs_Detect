@@ -1,6 +1,6 @@
 import pytest
 
-from neo_detect.rubin_utils import calc_colors
+from neo_detect.rubin_utils import calc_colors, transform_Vmag, RubinDetection
 
 # Reference V-band colors per SED type. Add new SED types here as they arrive;
 # the fixture and the parametrized value test pick them up automatically.
@@ -90,3 +90,34 @@ class Test_Calc_Colors:
         with pytest.raises(FileNotFoundError):
             calc_colors(sedname, sed_dir)
 
+
+@pytest.mark.parametrize(
+    "sed_type, sed_file",
+    [("s", "S.dat"), ("c", "C.dat"), ("d", "D.dat")],
+)
+@pytest.mark.parametrize("band", ["u", "g", "r", "i", "z", "y"])
+def test_transform_Vmag_matches_expected_color_and_sed_type(sed_type, sed_file, band):
+    vmag = 18.0
+    color_key = f"V-{band}"
+
+    # Check the shorthand SED type resolves to the expected file name
+    resolved_sed = RubinDetection.SED_FILES.get(sed_type, sed_type)
+    assert resolved_sed == sed_file
+
+    # Get the expected color from calc_colors()
+    color_data = calc_colors(sedname=sed_file, sed_dir=None)[sed_file]
+    expected_color = EXPECTED_COLORS[sed_file][color_key]
+
+    assert color_data[color_key] == pytest.approx(expected_color, abs=0.01)
+
+    # Transform V mag -> Rubin mag and ensure it matches the expected relation
+    transformed_mag = transform_Vmag(
+        vmag,
+        sed_type=sed_type,
+        filter_name=band,
+        filter_dir=None,
+        sed_dir=None,
+    )
+
+    expected_mag = vmag - expected_color
+    assert transformed_mag == pytest.approx(expected_mag, abs=0.01)

@@ -113,7 +113,33 @@ class RubinDetection:
       'd': 'D.dat',
    }
 
+   filter_colors = {
+        "u": "#1600EA",
+        "g": "#31DE1F",
+        "r": "#B52626",
+        "i": "#370201",
+        "z": "#BA52FF",
+        "y": "#61A2B3",
+   }
 
+def transform_Vmag(vmag, sed_type='s', filter_name='g', filter_dir=None, sed_dir=None):
+    """Convert a V-band magnitude into a Rubin/LSST magnitude for a given SED type and filter."""
+    sed_type = sed_type.lower()
+
+    if sed_type in RubinDetection.SED_FILES:
+        sedname = RubinDetection.SED_FILES[sed_type]
+    else:
+        sedname = sed_type
+
+    filter_name = filter_name.lower()
+    if filter_name not in ("u", "g", "r", "i", "z", "y"):
+        raise ValueError(f"Unsupported Rubin filter: {filter_name}")
+
+    # Use the same color model already implemented in calc_colors()
+    color_data = calc_colors(sedname=sedname, filter_dir=filter_dir, sed_dir=sed_dir)
+    color = color_data[sedname][f"V-{filter_name}"]
+
+    return float(vmag) - color
 
 
 # Doesn't work just yet, keep at it until it does something correctly 
