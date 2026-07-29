@@ -1,6 +1,13 @@
-import pytest
+import pathlib
+import shutil
+from datetime import UTC, datetime
 
-from neo_detect.rubin_utils import calc_colors, transform_Vmag, RubinDetection
+import pytest
+from astropy.time import Time
+
+from neo_detect.rubin_utils import RubinDetection, calc_colors, truncate_opsim
+
+SAMPLE_OPSIM_DB = pathlib.Path(__file__).parent / "data" / "opsim_sample_v5.3.0_10yrs.db"
 
 # Reference V-band colors per SED type. Add new SED types here as they arrive;
 # the fixture and the parametrized value test pick them up automatically.
@@ -121,3 +128,73 @@ def test_transform_Vmag_matches_expected_color_and_sed_type(sed_type, sed_file, 
 
     expected_mag = vmag - expected_color
     assert transformed_mag == pytest.approx(expected_mag, abs=0.01)
+
+
+class Test_Truncate_Opsim:
+    def test_missing_db(self, tmp_path):
+        # Define start and end dates for truncation using MJD values matching the sample data
+        start_date = Time(59000.0, format="mjd", scale="utc")
+        end_date = Time(59001.0, format="mjd", scale="utc")
+
+        # Call the truncate_opsim function
+        new_db_path, truncated_df = truncate_opsim(start_date, end_date, tmp_path)
+
+        assert new_db_path is None
+        assert truncated_df is None
+
+    def test_truncate_opsim(self, tmp_path):
+        # Create a temporary SQLite database with a simple opsim table
+
+        db_path = tmp_path / "test_opsim.db"
+        shutil.copy(SAMPLE_OPSIM_DB, db_path)
+
+        # Define start and end dates for truncation using MJD values matching the sample data
+        start_date = Time(61208.0, format="mjd", scale="utc")
+        end_date = Time(61480.0, format="mjd", scale="utc")
+
+        # Call the truncate_opsim function
+        new_db_path, truncated_df = truncate_opsim(start_date, end_date, str(db_path))
+
+        # Check that the new database file exists
+        assert new_db_path.exists()
+
+        # Check that the truncated DataFrame has the expected number of rows
+        assert len(truncated_df) == 2
+
+    def test_truncate_opsim_dt(self, tmp_path):
+        # Create a temporary SQLite database with a simple opsim table
+
+        db_path = tmp_path / "test_opsim.db"
+        shutil.copy(SAMPLE_OPSIM_DB, db_path)
+
+        # Define start and end dates for truncation using MJD values matching the sample data
+        start_date = datetime(2025, 12, 19, tzinfo=UTC)
+        end_date = datetime(2027, 3, 16, tzinfo=UTC)
+
+        # Call the truncate_opsim function
+        new_db_path, truncated_df = truncate_opsim(start_date, end_date, str(db_path))
+
+        # Check that the new database file exists
+        assert new_db_path.exists()
+
+        # Check that the truncated DataFrame has the expected number of rows
+        assert len(truncated_df) == 2
+
+    def test_truncate_opsim_completely(self, tmp_path):
+        # Create a temporary SQLite database with a simple opsim table
+
+        db_path = tmp_path / "test_opsim.db"
+        shutil.copy(SAMPLE_OPSIM_DB, db_path)
+
+        # Define start and end dates for truncation using MJD values matching the sample data
+        start_date = Time(59000.0, format="mjd", scale="utc")
+        end_date = Time(59001.0, format="mjd", scale="utc")
+
+        # Call the truncate_opsim function
+        new_db_path, truncated_df = truncate_opsim(start_date, end_date, str(db_path))
+
+        # Check that the new database file exists
+        assert new_db_path.exists()
+
+        # Check that the truncated DataFrame has the expected number of rows
+        assert len(truncated_df) == 0

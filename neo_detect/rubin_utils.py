@@ -1,10 +1,14 @@
 import os
+from datetime import datetime
+from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pandas as pd
+from astropy.time import Time
 from rubin_scheduler.data import get_data_dir
 from rubin_sim.phot_utils import Bandpass, Sed
 
-    
+
 def calc_colors(sedname='S.dat', filter_dir=None, sed_dir=None):
    """Calculate the colors for a given asteroids SED
 
@@ -103,6 +107,63 @@ def filter_figure_plot():
    plt.legend()
    plt.grid()
    plt.show()
+
+def truncate_opsim(start_date: datetime | Time,
+                   end_date: datetime | Time,
+                   db_path: str) -> tuple[Path | None, pd.DataFrame | None]:
+   """Truncate an opsim dataframe to the specified date range
+   Takes about 10-15 seconds to run on a typical opsim database.
+
+   Parameters
+   ----------
+   start_date : datetime
+         The start date of the truncation.
+   end_date : datetime
+         The end date of the truncation.
+   db_path : str
+         The path to the database containing the opsim data.
+
+   Returns
+   -------
+   new_db_path : Path
+         The path to the new database containing the truncated opsim data.
+   trunc_df : pandas.DataFrame
+         The truncated opsim dataframe.
+   """
+   import sqlite3
+
+   # 1. Connect to source SQLite database
+   try:
+       src_con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+   except (sqlite3.OperationalError, sqlite3.DatabaseError):
+      print("Error opening OpSim DB {db_path}")
+      return None, None
+
+   # 2. Read existing table into a DataFrame
+   df = pd.read_sql_query("SELECT * FROM observations", src_con)
+   src_con.close()
+
+   # Perform your data modifications on 'df' here...
+   if start_date is not None and end_date is not None:
+       if type(start_date) is not Time:
+           start_date = Time(start_date, scale="utc")
+       if type(end_date) is not Time:
+           end_date = Time(end_date, scale="utc")
+
+   trunc_df = df[(df['observationStartMJD'] >= start_date.mjd) & (df['observationStartMJD'] <= end_date.mjd)]
+   # 3. Write to new SQLite database
+   path = Path(db_path)
+   root = path.parent / path.stem
+   ext = path.suffix
+   new_db_path = Path(str(root) + f"_truncated_{int(start_date.mjd)}_{int(end_date.mjd)}" + ext)
+   dest_con = sqlite3.connect(new_db_path)
+   trunc_df.to_sql("observations", dest_con, if_exists="replace", index=False)
+
+   # 4. Close the connection
+   dest_con.close()
+
+   return new_db_path, trunc_df
+
 
 class RubinDetection: 
    """Class to handle Rubin detection calculations for asteroids
