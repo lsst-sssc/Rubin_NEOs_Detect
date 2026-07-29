@@ -118,7 +118,8 @@ def test_transform_Vmag_matches_expected_color_and_sed_type(sed_type, sed_file, 
     assert color_data[color_key] == pytest.approx(expected_color, abs=0.01)
 
     # Transform V mag -> Rubin mag and ensure it matches the expected relation
-    transformed_mag = transform_Vmag(
+    rubin = RubinDetection()
+    transformed_mag = rubin.transform_Vmag(
         vmag,
         sed_type=sed_type,
         filter_name=band,
