@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 from astropy.time import Time
 
+import matplotlib.pyplot as plt
 
 @dataclass
 class Constant_Depth:
@@ -111,6 +112,25 @@ class OpSim_Depth:
             finally:
                 con.close()  
 
+    def plot_depths(self, band: str):
+        """Plot the five-sigma limiting depth over time for a given band.
+
+        Parameters
+        ----------
+        band : str
+            The Rubin band to plot (one of u, g, r, i, z, y).
+        """
+        subset = self.observations[self.observations["band"] == band]
+        if subset.empty:
+            raise ValueError(f"No observations available in band {band}")
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(subset["observationStartMJD"], subset["fiveSigmaDepth"], marker='o', linestyle='-', markersize=2)
+        plt.title(f"Five-Sigma Limiting Depth Over Time in Band {band}")
+        plt.xlabel("Observation Start MJD")
+        plt.ylabel("Five-Sigma Limiting Depth (mag)")
+        plt.grid(True)
+        plt.show()
 
 
     # Steps to implement:
