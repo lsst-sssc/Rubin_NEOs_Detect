@@ -1,7 +1,9 @@
 import sqlite3
 import datetime
 import pathlib
+import os
 
+from astropy.units import pd
 import pytest
 
 from neo_detect.survey_depth import Constant_Depth, OpSim_Depth

@@ -1,4 +1,6 @@
+import os
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -157,6 +159,12 @@ if __name__ == "__main__":
     G = 0.15
 
     depth = Constant_Depth()
+    # Comment out above, swap to OpSim_Depth
+    # db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline.db'
+    # db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline_truncated_61284_61465.db
+    # depth = OpSim_Depth(db_path)
+
+    # Compute the candle flame and get the results
     results = compute_candle_flame(diameter, albedo, G, depth_model=depth)
 
     print(f"Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}  ->  H = {results['H']:.2f}")

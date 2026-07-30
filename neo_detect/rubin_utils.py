@@ -169,14 +169,14 @@ class RubinDetection:
    """Class to handle Rubin detection calculations for asteroids
    """
    SED_FILES = {
-      's': 'S.dat',
-      'c': 'C.dat',
-      'd': 'D.dat',
+      'S': 'S.dat',
+      'C': 'C.dat',
+      'D': 'D.dat',
    }
 
    filter_colors = filter_plot_colors()
 
-   def transform_Vmag(self, vmag, sed_type='s', filter_name='g', filter_dir=None, sed_dir=None):
+   def transform_Vmag(self, vmag, sed_type='S', filter_name='g', filter_dir=None, sed_dir=None):
       """Convert a V-band magnitude into a Rubin/LSST magnitude for a given SED type and filter."""
       sed_type = sed_type.lower()
 
@@ -190,7 +190,34 @@ class RubinDetection:
          raise ValueError(f"Unsupported Rubin filter: {filter_name}")
 
       # Use the same color model already implemented in calc_colors()
-      color_data = calc_colors(sedname=sedname, filter_dir=filter_dir, sed_dir=sed_dir)
+      color_data = EXPECTED_COLORS = {
+    'S.dat': {
+        'V-u': -1.8151,
+        'V-g': -0.3841,
+        'V-r':  0.2613,
+        'V-i':  0.4566,
+        'V-z':  0.4006,
+        'V-y':  0.4094,
+    },
+
+    'C.dat': {
+        'V-u': -1.5080,
+        'V-g': -0.2931,
+        'V-r':  0.1761,
+        'V-i':  0.2927,
+        'V-z':  0.2980,
+        'V-y':  0.3026,
+    },
+
+    'D.dat': {
+        'V-u': -1.6287,
+        'V-g': -0.3380,
+        'V-r':  0.2311,
+        'V-i':  0.4470,
+        'V-z':  0.5320,
+        'V-y':  0.6243,
+    },
+}
       color = color_data[sedname][f"V-{filter_name}"]
 
       return float(vmag) - color

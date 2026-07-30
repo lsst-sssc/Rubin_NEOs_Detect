@@ -2,6 +2,7 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import numpy as np
+import os
 
 import pandas as pd
 from astropy.time import Time
@@ -270,3 +271,10 @@ class OpSim_Depth:
             obs.to_sql("observations", out, if_exists="replace", index=False)
         finally:
             out.close()
+
+  # 6 month observation period, use code given:
+        db_path = os.path.join(os.getenv('RUBIN_SIM_DATA'), 'sim_baseline', 'baseline.db')
+        con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        query = f"SELECT * FROM observations WHERE observationStartMJD>=start_date AND observationStartMJD<=start_date+6months"
+        obs = pd.read_sql_query(query, con)
+        # still a WIP :p 
