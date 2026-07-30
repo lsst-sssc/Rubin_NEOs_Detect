@@ -107,3 +107,11 @@ class Test_OpSim_Depth:
                 con.execute("DELETE FROM observations")
             finally:
                 con.close()
+
+    def test_depth_returns_nearest_visit(self, opsim_db):
+        depth = OpSim_Depth(str(opsim_db))
+
+        # Star date 2026-09-01 is MJD 61208.0, which is very close to the first three rows in the test DB
+        date = datetime.datetime(2026, 9, 1, tzinfo=datetime.timezone.utc)
+        band = "g"
+        expected_depth = 24.512

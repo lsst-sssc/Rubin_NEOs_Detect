@@ -1,6 +1,7 @@
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
+import numpy as np
 
 import pandas as pd
 from astropy.time import Time
@@ -151,3 +152,121 @@ class OpSim_Depth:
     #    in which case return a small record instead of a bare float.
 
     # Reference in case of issues: https://community.lsst.org/t/midpointmjdtai-in-diasource-dp0-3/7866/5
+
+
+    def _date_to_utc_mjd(self, date: datetime) -> float:
+        """Convert a datetime to UTC MJD.
+
+        Naive datetimes are assumed to already be UTC.
+        """
+        if not isinstance(date, datetime):
+            raise TypeError(f"date must be a datetime, got {type(date)}")
+
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=timezone.utc)
+        else:
+            date = date.astimezone(timezone.utc)
+
+        return Time(date, scale="utc").utc.mjd
+
+    def sample_depths(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        band: str,
+        n_epochs: int,
+        tolerance_days: float = 1.0,
+    ) -> pd.DataFrame:
+        """Sample n_epochs depths between start_date and end_date.
+
+        The method samples evenly spaced target epochs, then matches each one
+        to the nearest visit in the requested band.
+        """
+        if n_epochs < 1:
+            raise ValueError("n_epochs must be >= 1")
+
+        start_mjd = self._date_to_utc_mjd(start_date)
+        end_mjd = self._date_to_utc_mjd(end_date)
+
+        if end_mjd <= start_mjd:
+            raise ValueError("end_date must be after start_date")
+
+        subset = self.observations[
+            (self.observations["band"] == band)
+            & (self.observations["observationStartMJD"] >= start_mjd)
+            & (self.observations["observationStartMJD"] <= end_mjd)
+        ]
+
+        if subset.empty:
+            raise ValueError(f"No observations available in band {band} in the requested date range")
+
+        target_mjds = np.linspace(start_mjd, end_mjd, n_epochs)
+
+        rows = []
+        for target_mjd in target_mjds:
+            nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
+            row = subset.loc[nearest_idx]
+
+            matched_mjd = float(row["observationStartMJD"])
+            delta_days = abs(matched_mjd - float(target_mjd))
+
+            if delta_days > tolerance_days:
+                rows.append(
+                    {
+                        "target_mjd": float(target_mjd),
+                        "matched_mjd": np.nan,
+                        "band": band,
+                        "fiveSigmaDepth": np.nan,
+                        "airmass": np.nan,
+                        "delta_days": delta_days,
+                    }
+                )
+                continue
+
+            rows.append(
+                {
+                    "target_mjd": float(target_mjd),
+                    "matched_mjd": matched_mjd,
+                    "band": row["band"],
+                    "fiveSigmaDepth": float(row["fiveSigmaDepth"]),
+                    "airmass": float(row["airmass"]),
+                    "delta_days": delta_days,
+                }
+            )
+
+        return pd.DataFrame(rows)
+
+    @staticmethod
+    def build_cutdown_observations(full_db_path: str, out_db_path: str, start_date: datetime, end_date: datetime) -> None:
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=timezone.utc)
+        else:
+            start_date = start_date.astimezone(timezone.utc)
+
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+        else:
+            end_date = end_date.astimezone(timezone.utc)
+
+        start_mjd = Time(start_date, scale="utc").utc.mjd
+        end_mjd = Time(end_date, scale="utc").utc.mjd
+
+        con = sqlite3.connect(f"file:{full_db_path}?mode=ro", uri=True)
+        try:
+            obs = pd.read_sql_query(
+                """
+                SELECT *
+                FROM observations
+                WHERE observationStartMJD BETWEEN ? AND ?
+                """,
+                con,
+                params=(start_mjd, end_mjd),
+            )
+        finally:
+            con.close()
+
+        out = sqlite3.connect(out_db_path)
+        try:
+            obs.to_sql("observations", out, if_exists="replace", index=False)
+        finally:
+            out.close()
