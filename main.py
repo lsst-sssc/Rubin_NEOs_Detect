@@ -26,7 +26,7 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     H = asteroid.abs_mag()
 
     # Get the limiting magnitude from the depth model
-    mag_lim = depth_model.depth(datetime.now())
+    mag_lim = depth_model.depth(datetime.now(tz=datetime.timezone.utc))
 
     # Create Cartesian grid here centred on the observer, with Sun-observer axis = x.
     x = np.linspace(r_obs - 2.0, r_obs + 2.0, n_grid_pts)
@@ -136,11 +136,11 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     X = results['x']
     Y = results['y']
     ax = plt.gca()
-    det = results['detectable_mask'].astype(float)
+    dets = results['detectable_mask'].astype(float)
 
 # Filled detectable region.
-    ax.contourf(X, Y, det, levels=[0.5, 1.5], colors=["orange"])
-    ax.contour(X, Y, det, levels=[0.5], colors=["darkorange"], linewidths=1.0)
+    ax.contourf(X, Y, dets, levels=[0.5, 1.5], colors=["orange"])
+    ax.contour(X, Y, dets, levels=[0.5], colors=["darkorange"], linewidths=1.0)
     ax.tick_params(axis='x', rotation=45)
     ax.set_xlabel("Perpendicular Distance (AU)")
     ax.set_ylabel("Distance from Sun-Observer (AU)")
