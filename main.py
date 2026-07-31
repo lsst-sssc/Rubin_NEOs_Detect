@@ -2,12 +2,13 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy.linalg import det
 
 from neo_detect.asteroid import Asteroid
 from neo_detect.survey_depth import Constant_Depth
+
 
 def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n_grid_pts=1200):
     """Return a Cartesian grid + boolean mask of where mag <= mag_lim.
