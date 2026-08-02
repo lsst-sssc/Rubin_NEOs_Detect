@@ -131,7 +131,7 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
 #     # Return the angle in degrees
 #     return np.degrees(np.arccos(cos_angle))
     
-def plot_candle_flame(results, diameter, albedo, savepath=None):
+def plot_candle_flame(results, diameter, albedo, savepath=None, depth_model=None):
     """Plots the detectable region for a given asteroid.
     """
 
@@ -139,10 +139,14 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     Y = results['y']
     ax = plt.gca()
     dets = results['detectable_mask'].astype(float)
+    P = np.zeros_like(X)
+    valid = results['valid']
+    mag = results['mag']
+    P[valid] = depth_model.detection_probability(mag[valid])
 
 # Filled detectable region.
-    ax.contourf(Y, X, dets, levels=[0.5, 1.5], colors=["orange"])
-    ax.contour(Y, X, dets, levels=[0.5], colors=["darkorange"], linewidths=1.0)
+    ax.contourf(Y, X, P, levels=30, cmap="inferno")
+    ax.contourf(Y, X, P, levels=30, cmap="inferno")
     ax.tick_params(axis='x', rotation=45)
     ax.set_xlabel("Perpendicular Distance (AU)")
     ax.set_ylabel("Distance from Sun-Observer (AU)")
