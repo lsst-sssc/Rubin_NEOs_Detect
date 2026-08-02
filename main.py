@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ import numpy as np
 from numpy.linalg import det
 
 from neo_detect.asteroid import Asteroid
-from neo_detect.survey_depth import Constant_Depth
+from neo_detect.survey_depth import Constant_Depth, OpSim_Depth
 
 
 def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n_grid_pts=1200):
@@ -26,7 +26,8 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     H = asteroid.abs_mag()
 
     # Get the limiting magnitude from the depth model
-    mag_lim = depth_model.depth(datetime.now(tz=datetime.timezone.utc))
+    test_date = datetime(2026, 10, 1, tzinfo=timezone.utc)
+    mag_lim = depth_model.depth( test_date, 'g')
 
     # Create Cartesian grid here centred on the observer, with Sun-observer axis = x.
     x = np.linspace(r_obs - 2.0, r_obs + 2.0, n_grid_pts)
@@ -139,18 +140,18 @@ def plot_candle_flame(results, diameter, albedo, savepath=None):
     dets = results['detectable_mask'].astype(float)
 
 # Filled detectable region.
-    ax.contourf(X, Y, dets, levels=[0.5, 1.5], colors=["orange"])
-    ax.contour(X, Y, dets, levels=[0.5], colors=["darkorange"], linewidths=1.0)
+    ax.contourf(Y, X, dets, levels=[0.5, 1.5], colors=["orange"])
+    ax.contour(Y, X, dets, levels=[0.5], colors=["darkorange"], linewidths=1.0)
     ax.tick_params(axis='x', rotation=45)
     ax.set_xlabel("Perpendicular Distance (AU)")
     ax.set_ylabel("Distance from Sun-Observer (AU)")
     ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}")
     ax.set_aspect('equal', adjustable='box')
-    ax.scatter(0.0, 0.0, marker='*', s=200, color='gold', edgecolor='black')
-    ax.scatter(1.0, 0.0, color='lightblue', s=100, label='Target Point')
-    ax.set_xlim(-1.0, 2.0)
-    ax.set_ylim(-1.0, 1.0) 
-    ax.legend(['Sun', 'Earth'])
+    # ax.scatter(0.0, 0.0, marker='*', s=200, color='gold', edgecolor='black')
+    ax.scatter(0.0, 1.0, color='lightblue', s=200, label='Target Point')
+    ax.set_xlim(-0.2, 0.2)
+    ax.set_ylim(0.95, 1.45) 
+    ax.legend(['Earth', 'Target Point'], loc='upper right')
     plt.show()
 
 if __name__ == "__main__":
@@ -159,11 +160,11 @@ if __name__ == "__main__":
     albedo = 0.14
     G = 0.15
 
-    depth = Constant_Depth()
+    # depth = Constant_Depth()
     # Comment out above, swap to OpSim_Depth
     # db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline.db'
-    # db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline_truncated_61284_61465.db
-    # depth = OpSim_Depth(db_path)
+    db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline_truncated_61284_61465.db'
+    depth = OpSim_Depth(db_path)
 
     # Compute the candle flame and get the results
     results = compute_candle_flame(diameter, albedo, G, depth_model=depth)
