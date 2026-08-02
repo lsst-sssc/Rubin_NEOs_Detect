@@ -1,6 +1,7 @@
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from astropy.units import mag
 import numpy as np
 import os
 
@@ -59,9 +60,13 @@ class OpSim_Depth:
 
     COLUMNS = ("observationStartMJD", "band", "fiveSigmaDepth", "airmass")
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str, fill_factor=0.88, p_detect=1.0, n_epochs=120):
         self.db_path = db_path
         self.observations = self._read_observations()
+        self.fill_factor = fill_factor
+        self.p_detect = p_detect
+        self.p_observed = self.fill_factor * self.p_detect  # effective probability of detection
+        self.n_epochs = n_epochs
 
     def depth(self, date: datetime, band: str) -> float:
         """Return the five-sigma limiting depth for the visit nearest in time.
@@ -170,19 +175,89 @@ class OpSim_Depth:
 
         return Time(date, scale="utc").utc.mjd
 
+    # def sample_depths(
+    #     self,
+    #     start_date: datetime,
+    #     end_date: datetime,
+    #     band: str,
+    #     n_epochs: int,
+    #     tolerance_days: float = 1.0,
+    # ) -> pd.DataFrame:
+    #     """Sample n_epochs depths between start_date and end_date.
+
+    #     The method samples evenly spaced target epochs, then matches each one
+    #     to the nearest visit in the requested band.
+    #     """
+    #     if n_epochs < 1:
+    #         raise ValueError("n_epochs must be >= 1")
+
+    #     start_mjd = self._date_to_utc_mjd(start_date)
+    #     end_mjd = self._date_to_utc_mjd(end_date)
+
+    #     if end_mjd <= start_mjd:
+    #         raise ValueError("end_date must be after start_date")
+
+    #     subset = self.observations[
+    #         (self.observations["band"] == band)
+    #         & (self.observations["observationStartMJD"] >= start_mjd)
+    #         & (self.observations["observationStartMJD"] <= end_mjd)
+    #     ]
+
+    #     if subset.empty:
+    #         raise ValueError(f"No observations available in band {band} in the requested date range")
+
+    #     target_mjds = np.linspace(start_mjd, end_mjd, n_epochs)
+
+    #     rows = []
+    #     for target_mjd in target_mjds:
+    #         nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
+    #         row = subset.loc[nearest_idx]
+
+    #         matched_mjd = float(row["observationStartMJD"])
+    #         delta_days = abs(matched_mjd - float(target_mjd))
+
+    #         if delta_days > tolerance_days:
+    #             rows.append(
+    #                 {
+    #                     "target_mjd": float(target_mjd),
+    #                     "matched_mjd": np.nan,
+    #                     "band": band,
+    #                     "fiveSigmaDepth": np.nan,
+    #                     "airmass": np.nan,
+    #                     "delta_days": delta_days,
+    #                 }
+    #             )
+    #             continue
+
+    #         rows.append(
+    #             {
+    #                 "target_mjd": float(target_mjd),
+    #                 "matched_mjd": matched_mjd,
+    #                 "band": row["band"],
+    #                 "fiveSigmaDepth": float(row["fiveSigmaDepth"]),
+    #                 "airmass": float(row["airmass"]),
+    #                 "delta_days": delta_days,
+    #             }
+    #         )
+
+    #     return pd.DataFrame(rows)
+
+    # modified slightly to make a wrapper for for above function and return an array-like thing of n_epochs
+
+    # ...existing code...
+
     def sample_depths(
         self,
         start_date: datetime,
         end_date: datetime,
         band: str,
-        n_epochs: int,
+        n_epochs: int | None = None,
         tolerance_days: float = 1.0,
-    ) -> pd.DataFrame:
-        """Sample n_epochs depths between start_date and end_date.
+    ) -> np.ndarray:
+        """Return an array of m5 depths sampled between start_date and end_date."""
+        if n_epochs is None:
+            n_epochs = self.n_epochs
 
-        The method samples evenly spaced target epochs, then matches each one
-        to the nearest visit in the requested band.
-        """
         if n_epochs < 1:
             raise ValueError("n_epochs must be >= 1")
 
@@ -192,50 +267,21 @@ class OpSim_Depth:
         if end_mjd <= start_mjd:
             raise ValueError("end_date must be after start_date")
 
-        subset = self.observations[
-            (self.observations["band"] == band)
-            & (self.observations["observationStartMJD"] >= start_mjd)
-            & (self.observations["observationStartMJD"] <= end_mjd)
-        ]
-
-        if subset.empty:
-            raise ValueError(f"No observations available in band {band} in the requested date range")
-
         target_mjds = np.linspace(start_mjd, end_mjd, n_epochs)
+        depths = []
 
-        rows = []
-        for target_mjd in target_mjds:
-            nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
-            row = subset.loc[nearest_idx]
+        for mjd in target_mjds:
+            target_date = Time(mjd, format="mjd", scale="utc").to_datetime()
+            try:
+                depth = self.depth(target_date, band)
+            except ValueError:
+                depth = np.nan
+            depths.append(depth)
 
-            matched_mjd = float(row["observationStartMJD"])
-            delta_days = abs(matched_mjd - float(target_mjd))
+        return np.asarray(depths, dtype=float)
 
-            if delta_days > tolerance_days:
-                rows.append(
-                    {
-                        "target_mjd": float(target_mjd),
-                        "matched_mjd": np.nan,
-                        "band": band,
-                        "fiveSigmaDepth": np.nan,
-                        "airmass": np.nan,
-                        "delta_days": delta_days,
-                    }
-                )
-                continue
+    # if it doesn't work, return to old code and keep trying!! 
 
-            rows.append(
-                {
-                    "target_mjd": float(target_mjd),
-                    "matched_mjd": matched_mjd,
-                    "band": row["band"],
-                    "fiveSigmaDepth": float(row["fiveSigmaDepth"]),
-                    "airmass": float(row["airmass"]),
-                    "delta_days": delta_days,
-                }
-            )
-
-        return pd.DataFrame(rows)
 
     @staticmethod
     def build_cutdown_observations(full_db_path: str, out_db_path: str, start_date: datetime, end_date: datetime) -> None:
@@ -278,3 +324,28 @@ class OpSim_Depth:
         query = f"SELECT * FROM observations WHERE observationStartMJD>=start_date AND observationStartMJD<=start_date+6months"
         obs = pd.read_sql_query(query, con)
         # still a WIP :p 
+        con.close()
+
+    def detection_probability(self, mag_asteroid):
+        """Calculate the probability of detecting an asteroid with a given magnitude."""
+        # Get sampling of depths 
+        start_mjd = 61284
+        end_mjd = 61465
+
+        # convert to datetime objects for the sample_depths function
+        start_date = Time(start_mjd, format="mjd", scale="utc").to_datetime()
+        end_date = Time(end_mjd, format="mjd", scale="utc").to_datetime()
+
+        mag_lim = self.sample_depths(
+            start_date=start_date,
+            end_date=end_date,
+            band='r'
+            ) # Only do r band for now for comparison to previous
+        mag_lim = np.asarray(mag_lim)
+        mag = np.asarray(mag_asteroid)
+        # Fraction of epochs deep enough, per grid point:
+        # compare m[..., None] <= d  -> mean over last axis.
+        with np.errstate(invalid="ignore"):
+            deep_enough = (mag[..., None] <= mag_lim[(None,) * mag_lim.ndim + (slice(None),)])
+        frac_deep = deep_enough.mean(axis=-1)
+        return self.p_observed * frac_deep

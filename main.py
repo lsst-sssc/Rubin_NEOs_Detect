@@ -46,8 +46,9 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     for i, j in valid_indices:
         mag[i, j] = asteroid.apparent_magnitude(r[i, j], delta[i, j], phase_angle[i, j])
 
-    # Create a boolean mask of where the apparent magnitude is less than or equal to the limiting magnitude
-    brightness_mask = boolean_mask(mag, mag_lim)
+    # Create brightness mask based on the limiting magnitude
+    brightness_mask = depth_model.detection_probability(mag)
+
 
     # TL: Add call to elongation_angle function here, and filter out points with 
     # elongation < 30 degrees. Return a boolean mask of where elongation >= 30 degrees. 
@@ -61,8 +62,8 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     # Create a boolean mask of where the elongation angle is greater than or equal to 30 degrees
     observable_mask = elongation >= 30.0
 
-    # Combine masks to get the final detectable mask
-    detectable_mask = valid & brightness_mask & observable_mask
+    # Combine masks to make probability of detection
+    detectable_mask = np.where(valid & observable_mask, brightness_mask, 0.0)
 
     # Return results as a dictionary
     return {
