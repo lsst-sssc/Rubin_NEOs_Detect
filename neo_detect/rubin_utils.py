@@ -175,10 +175,17 @@ class RubinDetection:
    }
 
    filter_colors = filter_plot_colors()
-
+   def __init__(self, depth_model=None):
+      self.depth_model = depth_model
+      self.SED_FILES = {
+         'S': 'S.dat',
+         'C': 'C.dat',
+         'D': 'D.dat',
+      }
+      
    def transform_Vmag(self, vmag, sed_type='S', filter_name='g', filter_dir=None, sed_dir=None):
       """Convert a V-band magnitude into a Rubin/LSST magnitude for a given SED type and filter."""
-      sed_type = sed_type.lower()
+      sed_type = sed_type.upper()
 
       if sed_type in self.SED_FILES:
          sedname = self.SED_FILES[sed_type]
