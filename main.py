@@ -7,6 +7,7 @@ import numpy as np
 from numpy.linalg import det
 
 from neo_detect.asteroid import Asteroid
+from neo_detect.rubin_utils import RubinDetection
 from neo_detect.survey_depth import Constant_Depth, OpSim_Depth
 
 
@@ -175,6 +176,14 @@ if __name__ == "__main__":
     db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline_truncated_61284_61465.db'
     depth = OpSim_Depth(db_path)
 
+    # Initialize the RubinDetection class with the depth model
+    rubin_detection = RubinDetection(depth_model=depth)
+    Vmag = 20.0  # Example V-band magnitude
+    gmag = rubin_detection.transform_Vmag(Vmag, sed_type='S', filter_name='g')
+    print(f"V-band magnitude: {Vmag}, g-band magnitude: {gmag}") 
+    # this SHOULD work but something weird is happening,,,
+
+    
     # Compute the candle flame and get the results
     results = compute_candle_flame(diameter, albedo, G, depth_model=depth)
 
