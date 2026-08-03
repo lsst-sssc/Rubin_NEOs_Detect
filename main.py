@@ -131,31 +131,33 @@ def elongation_angle(sun_vector, asteroid_vector, earth_vector):
 #     # Return the angle in degrees
 #     return np.degrees(np.arccos(cos_angle))
     
-def plot_candle_flame(results, diameter, albedo, savepath=None, depth_model=None):
+def plot_candle_flame(results, diameter, albedo, savepath=None, depth_model=None, valid=None):
     """Plots the detectable region for a given asteroid.
     """
 
     X = results['x']
     Y = results['y']
+    fig = plt.subplots(figsize=(8, 8))
     ax = plt.gca()
     dets = results['detectable_mask'].astype(float)
-    P = np.zeros_like(X)
-    valid = results['valid']
     mag = results['mag']
-    P[valid] = depth_model.detection_probability(mag[valid])
+    if valid is not None:
+        dets[~valid] = np.nan
 
 # Filled detectable region.
-    ax.contourf(Y, X, P, levels=30, cmap="inferno")
-    ax.contourf(Y, X, P, levels=30, cmap="inferno")
+    ax.contourf(Y, X, dets, levels=30, cmap="inferno")
+    ax.contourf(Y, X, dets, levels=30, cmap="inferno")
     ax.tick_params(axis='x', rotation=45)
     ax.set_xlabel("Perpendicular Distance (AU)")
     ax.set_ylabel("Distance from Sun-Observer (AU)")
     ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}")
     ax.set_aspect('equal', adjustable='box')
+    cbar = plt.colorbar(ax.contourf(Y, X, dets, levels=30, cmap="inferno"))
+    cbar.set_label("Detection Probability")
     # ax.scatter(0.0, 0.0, marker='*', s=200, color='gold', edgecolor='black')
-    ax.scatter(0.0, 1.0, color='lightblue', s=200, label='Target Point')
-    ax.set_xlim(-0.2, 0.2)
-    ax.set_ylim(0.95, 1.45) 
+    ax.scatter(0.0, 1.0, color='lightblue', s=300, label='Target Point')
+    ax.set_xlim(-0.25, 0.25)
+    ax.set_ylim(0.95, 1.5) 
     ax.legend(['Earth', 'Target Point'], loc='upper right')
     plt.show()
 
