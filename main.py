@@ -27,7 +27,7 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
 
     # Get the limiting magnitude from the depth model
     test_date = datetime(2026, 10, 1, tzinfo=timezone.utc)
-    mag_lim = depth_model.depth( test_date, 'g')
+    mag_lim = depth_model.depth( test_date, 'r')
 
     # Create Cartesian grid here centred on the observer, with Sun-observer axis = x.
     x = np.linspace(r_obs - 2.0, r_obs + 2.0, n_grid_pts)
@@ -152,7 +152,9 @@ def plot_candle_flame(results, diameter, albedo, savepath=None, depth_model=None
     ax.set_ylabel("Distance from Sun-Observer (AU)")
     ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}")
     ax.set_aspect('equal', adjustable='box')
-    cbar = plt.colorbar(ax.contourf(Y, X, dets, levels=30, cmap="inferno"))
+    cbar = plt.colorbar(
+        ax.contourf(Y, X, dets, levels=20, cmap="inferno"), shrink=0.9, aspect=20, pad=0.02
+        )
     cbar.set_label("Detection Probability")
     # ax.scatter(0.0, 0.0, marker='*', s=200, color='gold', edgecolor='black')
     ax.scatter(0.0, 1.0, color='lightblue', s=300, label='Target Point')
