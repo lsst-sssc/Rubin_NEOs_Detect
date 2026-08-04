@@ -151,7 +151,7 @@ def plot_candle_flame(results, diameter, albedo, savepath=None, depth_model=None
     ax.tick_params(axis='x', rotation=45)
     ax.set_xlabel("Perpendicular Distance (AU)")
     ax.set_ylabel("Distance from Sun-Observer (AU)")
-    ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}")
+    ax.set_title(f"Detectable Region for Asteroid: D = {diameter:.0f} m, p_V = {albedo:.2f}, & H = {results['H']:.2f}", pad =30)
     ax.set_aspect('equal', adjustable='box')
     cbar = plt.colorbar(
         ax.contourf(Y, X, dets, levels=20, cmap="inferno"), shrink=0.9, aspect=20, pad=0.02
@@ -179,9 +179,16 @@ if __name__ == "__main__":
     # Initialize the RubinDetection class with the depth model
     rubin_detection = RubinDetection(depth_model=depth)
     Vmag = 20.0  # Example V-band magnitude
-    gmag = rubin_detection.transform_Vmag(Vmag, sed_type='S', filter_name='g')
-    print(f"V-band magnitude: {Vmag}, g-band magnitude: {gmag}") 
+
+    print("before transform_Vmag", flush=True)
+    try:
+        gmag = rubin_detection.transform_Vmag(Vmag, sed_type='S', filter_name='g')
+        print(f"after transform_Vmag: {gmag}", flush=True)
+    except Exception as e:
+        print(f"transform_Vmag failed: {e!r}", flush=True)
+    print("after try/except", flush=True)
     # this SHOULD work but something weird is happening,,,
+    # it DOESN'T :(
 
     
     # Compute the candle flame and get the results
