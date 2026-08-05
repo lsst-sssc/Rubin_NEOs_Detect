@@ -8,8 +8,10 @@ dependencies = [
     "ipython>=9.15.0",
     "matplotlib>=3.11.0",
     "numpy>=2.5.0",
+    "pyqt5>=5.15.11",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
+    "rubin-scheduler>=4.3.0",
     "rubin-sim>=2.6.2",
     "sbpy>=0.6.0",
 ]
