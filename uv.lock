@@ -1823,7 +1823,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -2519,7 +2519,7 @@ dev = [{ name = "jupyter", specifier = ">=1.1.1" }]
 
 [[package]]
 name = "rubin-scheduler"
-version = "4.3.0"
+version = "4.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astroplan" },
@@ -2535,9 +2535,9 @@ dependencies = [
     { name = "tables" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c2/28/b0e0b9738f4e92d02d709c4595d1c95f625d3e29e9772a66eaee569df46b/rubin_scheduler-4.3.0.tar.gz", hash = "sha256:f1a5e806f6c2fdb4fb89bcbd8b26bc963e40edc2a1f27b19f594c80fb2e1c5ba", size = 388979, upload-time = "2026-07-06T18:14:40.386Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/66/89/caa5ac0a7814f3b22c3f7f90e9d0e18f1776cb79c2c4190219fbab8ba336/rubin_scheduler-4.5.0.tar.gz", hash = "sha256:d4d38ac594ea1e2e2cf4b98b1915f072f9315d2e11ae9e28aacf0531afd842b3", size = 392002, upload-time = "2026-07-29T17:51:34.866Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/ad/7573862344d0bcd1372bd21c3b601deb933e105f29c47f96849c07673fc4/rubin_scheduler-4.3.0-py3-none-any.whl", hash = "sha256:31d62cedccdcbfd8c799586372230c532a7736354bf39610bb3b2935ee21c153", size = 449929, upload-time = "2026-07-06T18:14:39.274Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/76/725e4c8c64f1ae92a7252a9bb0899cdc84483933f9e5855a4fe0b3aad606/rubin_scheduler-4.5.0-py3-none-any.whl", hash = "sha256:bf2ac1b911308a9f0588c18d18ef098c6fbe4f097f32885ec7a9dd64a1515414", size = 452996, upload-time = "2026-07-29T17:51:33.31Z" },
 ]
 
 [[package]]

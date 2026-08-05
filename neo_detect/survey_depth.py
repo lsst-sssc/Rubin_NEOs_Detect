@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 class Constant_Depth:
     m5_depth: float = 24.52  # Rubin r-filter m5 magnitude
 
-    def depth(self, date: datetime) -> float:
+    def depth(self, date: datetime, band: str = "r") -> float:
         """
         Returns the constant depth for a given date.
 

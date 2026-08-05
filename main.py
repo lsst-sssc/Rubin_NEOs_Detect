@@ -11,7 +11,7 @@ from neo_detect.rubin_utils import RubinDetection
 from neo_detect.survey_depth import Constant_Depth, OpSim_Depth
 
 
-def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n_grid_pts=1200):
+def compute_candle_flame(diameter=30.0, albedo=0.14, mag_lim=None, G=0.15, depth_model=None, n_grid_pts=1200):
     """Return a Cartesian grid + boolean mask of where mag <= mag_lim.
     """
 
@@ -19,7 +19,10 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     r_obs = 1.0  # AU
 
     if depth_model is None:
-        depth_model = Constant_Depth()
+        if mag_lim is not None:
+            depth_model = Constant_Depth(m5_depth=float(mag_lim))
+        else:
+            depth_model = Constant_Depth()
 
     # Create an asteroid object
     asteroid = Asteroid(diameter=diameter, albedo=albedo, G=G)
@@ -28,7 +31,7 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
 
     # Get the limiting magnitude from the depth model
     test_date = datetime(2026, 10, 1, tzinfo=timezone.utc)
-    mag_lim = depth_model.depth( test_date, 'r')
+    mag_lim = depth_model.depth(test_date, "r")
 
     # Create Cartesian grid here centred on the observer, with Sun-observer axis = x.
     x = np.linspace(r_obs - 2.0, r_obs + 2.0, n_grid_pts)
@@ -63,8 +66,9 @@ def compute_candle_flame(diameter=30.0, albedo=0.14, G=0.15, depth_model=None, n
     # Create a boolean mask of where the elongation angle is greater than or equal to 30 degrees
     observable_mask = elongation >= 30.0
 
-    # Combine masks to make probability of detection
-    detectable_mask = np.where(valid & observable_mask, brightness_mask, 0.0)
+    # Combine masks to make boolean mask of detection (whether probability > 0)
+    detectable_prob = np.where(valid & observable_mask, brightness_mask, 0.0)
+    detectable_mask = (detectable_prob > 0.0)
 
     # Return results as a dictionary
     return {
