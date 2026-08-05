@@ -100,7 +100,7 @@ class Test_Calc_Colors:
 
 @pytest.mark.parametrize(
     "sed_type, sed_file",
-    [("s", "S.dat"), ("c", "C.dat"), ("d", "D.dat")],
+    [("S", "S.dat"), ("C", "C.dat"), ("D", "D.dat")],
 )
 @pytest.mark.parametrize("band", ["u", "g", "r", "i", "z", "y"])
 def test_transform_Vmag_matches_expected_color_and_sed_type(sed_type, sed_file, band):
