@@ -32,6 +32,9 @@ class Constant_Depth:
         """
         return self.m5_depth
 
+    def detection_probability(self, mag_asteroid):
+        return mag_asteroid <= self.m5_depth
+    # write docstring 
 
 class OpSim_Depth:
     """Per-visit survey depth read from a Rubin/LSST OpSim cadence database.
@@ -72,19 +75,21 @@ class OpSim_Depth:
         """Return the five-sigma limiting depth for the visit nearest in time.
 
         Looks up the visit in the requested ``band`` whose observation time is
-        closest to ``date`` and returns its ``fiveSigmaDepth``.
+        closest to ``date`` and returns its ``fiveSigmaDepth`` and ``band``.
 
         Parameters
         ----------
         date : datetime
             The time of interest.
         band : str
-            The Rubin band to match (one of u, g, r, i, z, y).
+            The Rubin band to match (one of u, g, r, i, z, y or all).
 
         Returns
         -------
         float
             The five-sigma limiting magnitude of the nearest matching visit.
+        float
+            The band of the nearest matching visit.
         """
         if not isinstance(date, datetime):
             raise TypeError(f"date must be a datetime, got {type(date)}")
@@ -94,9 +99,10 @@ class OpSim_Depth:
         # If TAI, use Time(date, scale="tai").utc.mjd instead but be wary of mixing timescales
         
         # Restrict to the requested band and guard against an empty selection
-        subset = self.observations[self.observations["band"] == band]
-        if subset.empty:
-            raise ValueError(f"No observations available in band {band}")
+        if band != 'all':
+            subset = self.observations[self.observations["band"] == band]
+            if subset.empty:
+                raise ValueError(f"No observations available in band {band}")
 
         # Find the row with the minimum absolute difference in MJD
         nearest_idx = (subset["observationStartMJD"] - target_mjd).abs().idxmin()
@@ -109,8 +115,8 @@ class OpSim_Depth:
         if delta_mjd > 1.0:  # Example tolerance of 1 day
             raise ValueError(f"No observations within 1 day of {date} in band {band}")
         
-        return float(nearest_row["fiveSigmaDepth"])
-    
+        return float(nearest_row["fiveSigmaDepth"]), nearest_row["band"]
+
     def _read_observations(self) -> pd.DataFrame:
             query = f"SELECT {', '.join(self.COLUMNS)} FROM observations"
             con = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
@@ -269,16 +275,19 @@ class OpSim_Depth:
 
         target_mjds = np.linspace(start_mjd, end_mjd, n_epochs)
         depths = []
+        bands = []
 
         for mjd in target_mjds:
             target_date = Time(mjd, format="mjd", scale="utc").to_datetime()
             try:
-                depth = self.depth(target_date, band)
+                depth, band = self.depth(target_date, band)
             except ValueError:
                 depth = np.nan
+                band = np.nan
             depths.append(depth)
+            bands.append(band)
 
-        return np.asarray(depths, dtype=float)
+        return np.asarray(depths, dtype=float), np.asarray(bands, dtype=float)
 
     # if it doesn't work, return to old code and keep trying!! 
 
@@ -339,7 +348,8 @@ class OpSim_Depth:
         mag_lim = self.sample_depths(
             start_date=start_date,
             end_date=end_date,
-            band='r'
+            # band='r',
+            band='all',
             ) # Only do r band for now for comparison to previous
         mag_lim = np.asarray(mag_lim)
         mag = np.asarray(mag_asteroid)
@@ -349,3 +359,7 @@ class OpSim_Depth:
             deep_enough = (mag[..., None] <= mag_lim[(None,) * mag_lim.ndim + (slice(None),)])
         frac_deep = deep_enough.mean(axis=-1)
         return self.p_observed * frac_deep
+
+    # transform band mag to v mag or vice versa, same code either works
+    # for loop, return band
+    # 

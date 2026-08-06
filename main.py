@@ -179,21 +179,6 @@ if __name__ == "__main__":
     # db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline.db'
     db_path = Path(os.environ['RUBIN_SIM_DATA_DIR']) / 'sim_baseline' / 'baseline_truncated_61284_61465.db'
     depth = OpSim_Depth(db_path)
-
-    # Initialize the RubinDetection class with the depth model
-    rubin_detection = RubinDetection(depth_model=depth)
-    Vmag = 20.0  # Example V-band magnitude
-
-    print("before transform_Vmag", flush=True)
-    try:
-        gmag = rubin_detection.transform_Vmag(Vmag, sed_type='S', filter_name='g')
-        print(f"after transform_Vmag: {gmag}", flush=True)
-    except Exception as e:
-        print(f"transform_Vmag failed: {e!r}", flush=True)
-    print("after try/except", flush=True)
-    # this SHOULD work but something weird is happening,,,
-    # it DOESN'T :(
-
     
     # Compute the candle flame and get the results
     results = compute_candle_flame(diameter, albedo, G, depth_model=depth)
