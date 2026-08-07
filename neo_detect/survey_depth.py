@@ -33,8 +33,20 @@ class Constant_Depth:
         return self.m5_depth
 
     def detection_probability(self, mag_asteroid):
+        """
+        Calculate the probability of detecting an asteroid with a given magnitude.
+        Parameters
+        ----------
+        mag_asteroid : float or array-like
+            The magnitude of the asteroid(s) to evaluate.
+
+        Returns
+        -------
+        float or array-like
+            The probability of detecting the asteroid(s).
+        """
         return mag_asteroid <= self.m5_depth
-    # write docstring 
+    
 
 class OpSim_Depth:
     """Per-visit survey depth read from a Rubin/LSST OpSim cadence database.
@@ -362,4 +374,37 @@ class OpSim_Depth:
 
     # transform band mag to v mag or vice versa, same code either works
     # for loop, return band
-    # 
+
+    def transform_Vmag(self, mag_band, band):
+        """Transform a magnitude in a given band to V-band magnitude.
+
+        Parameters
+        ----------
+        mag_band : float or array-like
+            The magnitude in the specified band.
+        band : str
+            The band of the input magnitude (e.g., 'r', 'g', 'i', etc.).
+
+        Returns
+        -------
+        float or array-like
+            The corresponding V-band magnitude.
+        """
+        # Define the transformation coefficients for each band
+        # These coefficients are based on empirical relations and may vary slightly in the literature.
+        # The values here are illustrative; you may want to adjust them based on your specific needs.
+        supported_bands = ['u', 'g', 'r', 'i', 'z', 'y']
+        if band not in supported_bands:
+            raise ValueError(f"Unsupported band '{band}'. Supported bands are: {supported_bands}")
+
+        # Use a for loop to find the match and transform the magnitude
+        for b, func in [
+            ('u', lambda m: m + 0.79),
+            ('g', lambda m: m + 0.59),
+            ('r', lambda m: m + 0.21),
+            ('i', lambda m: m - 0.40),
+            ('z', lambda m: m - 0.54),
+            ('y', lambda m: m - 0.60)
+        ]:
+            if band == b:
+                return func(mag_band)
