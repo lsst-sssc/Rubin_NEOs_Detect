@@ -35,10 +35,24 @@ class NEOMOD3(NEOModel):
         super().__init__(data_root, filename)
 
     def load_table(self, path: Path) -> Table:
+        base_columns = ["H", "a", "e", "inc", "diam", "pV"]
+        extra_columns = ["Omega", "argPeri", "meanAnomaly", "epoch", "sed_filename"]
+
+        with open(path) as f:
+            first_line = f.readline()
+        ncols = len(first_line.split())
+
+        if ncols == len(base_columns):
+            names = base_columns
+        elif ncols == len(base_columns) + len(extra_columns):
+            names = base_columns + extra_columns
+        else:
+            raise ValueError(f"Unexpected number of columns ({ncols}) in NEOMOD3 file {path}")
+
         return Table.read(
             path,
             format="ascii",
-            names=["H", "a", "e", "inc", "diam", "pV"],
+            names=names,
         )
 
 
